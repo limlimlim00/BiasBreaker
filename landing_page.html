@@ -172,6 +172,63 @@
       color: #aaa;
       cursor: not-allowed;
     }
+
+    .login-popup {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .login-popup-content {
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px 24px 24px 24px;
+      min-width: 280px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .social-btn {
+      width: 220px;
+      padding: 12px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    .social-btn.google {
+      background: #fff;
+      color: #222;
+      border: 1px solid #ddd;
+    }
+    .social-btn.naver {
+      background: #1ec800;
+      color: #fff;
+    }
+    .social-btn.kakao {
+      background: #fee500;
+      color: #3c1e1e;
+    }
+    .close-popup {
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 15px;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+    .social-btn img {
+      display: block;
+      margin: 0 auto;
+      height: 32px;
+    }
   </style>
 
   
@@ -179,6 +236,21 @@
 <body>
   <div class="logo">BIASBREAKER</div>
   <button class="login-btn">로그인</button>
+  <div class="login-popup" style="display:none;">
+    <div class="login-popup-content">
+      <h3>소셜 로그인</h3>
+      <button class="social-btn google">
+        <img src="image/google.png" alt="Google로 로그인" style="height:32px;" />
+      </button>
+      <button class="social-btn naver">
+        <img src="image/naver.png" alt="네이버로 로그인" style="height:32px;" />
+      </button>
+      <button class="social-btn kakao">
+        <img src="image/kakao.png" alt="카카오로 로그인" style="height:32px;" />
+      </button>
+      <button class="close-popup">닫기</button>
+    </div>
+  </div>
 
   <header>
     <div class="header-row">
@@ -282,6 +354,21 @@
     });
     searchInput.addEventListener('blur', function() {
       if (!this.value) this.placeholder = originalPlaceholder;
+    });
+
+    // 로그인 팝업 열기/닫기
+    const loginBtn = document.querySelector('.login-btn');
+    const loginPopup = document.querySelector('.login-popup');
+    const closePopupBtn = document.querySelector('.close-popup');
+    loginBtn.addEventListener('click', () => {
+      loginPopup.style.display = 'flex';
+    });
+    closePopupBtn.addEventListener('click', () => {
+      loginPopup.style.display = 'none';
+    });
+    // 바깥 클릭 시 닫기
+    loginPopup.addEventListener('mousedown', (e) => {
+      if (e.target === loginPopup) loginPopup.style.display = 'none';
     });
   </script>
 </body>
