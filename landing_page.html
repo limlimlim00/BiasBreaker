@@ -57,6 +57,18 @@
       border-radius: 20px 0 0 20px;
       border: 1px solid #ccc;
       font-size: 14px;
+      text-align: center;
+    }
+
+
+    .search-bar input:focus, .search-bar:focus-within {
+      outline: 2px solid black;
+      z-index: 1;
+    }
+
+    .search-bar:focus-within {
+      box-shadow: 0 0 0 2px #0078ff;
+      border-radius: 20px;
     }
 
     .search-btn {
@@ -85,7 +97,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: calc(100vh - 120px); /* 헤더/패딩 고려 */
+      min-height: calc(100vh - 240px); /* 헤더/패딩 고려 */
     }
 
     .issue-container {
@@ -260,6 +272,16 @@
           alert(`${button.textContent} 클릭됨`);
         }
       });
+    });
+
+    // 검색바 placeholder 포커스 시 사라지게
+    const searchInput = document.querySelector('.search-bar input');
+    const originalPlaceholder = searchInput.placeholder;
+    searchInput.addEventListener('focus', function() {
+      this.placeholder = '';
+    });
+    searchInput.addEventListener('blur', function() {
+      if (!this.value) this.placeholder = originalPlaceholder;
     });
   </script>
 </body>
