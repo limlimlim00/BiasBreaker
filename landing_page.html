@@ -341,7 +341,7 @@
     document.querySelectorAll(".issue-column button").forEach(button => {
       button.addEventListener("click", () => {
         if (!button.disabled) {
-          alert(`${button.textContent} 클릭됨`);
+          window.location.href = "search_result_page.html";
         }
       });
     });
