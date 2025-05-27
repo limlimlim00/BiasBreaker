@@ -25,10 +25,27 @@
     .logo {
       font-weight: bold;
       font-size: 30px;
-      position: absolute;
-      top: 30px;
-      left: 40px;
       z-index: 10;
+      cursor: pointer;
+      margin-bottom: 0;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+      position: static;
+      flex-direction: row;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
 
     .login-btn {
@@ -39,21 +56,8 @@
       padding: 10px 20px;
       border-radius: 20px;
       cursor: pointer;
-      position: absolute;
-      top: 30px;
-      right: 40px;
       z-index: 10;
-    }
-
-    .header-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 24px;
-      max-width: 900px;
-      margin: 0 auto;
-      width: 100%;
-      position: relative;
+      margin-bottom: 0;
     }
 
     .search-bar {
@@ -63,6 +67,7 @@
       width: 100%;
       flex: 1;
       margin: 0 auto;
+      margin-bottom: 32px;
     }
 
     .search-bar input {
@@ -206,31 +211,15 @@
       gap: 16px;
     }
 
-    .social-btn {
+    .social-login-img {
       width: 220px;
-      padding: 12px 0;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: bold;
+      height: auto;
       cursor: pointer;
       margin-bottom: 8px;
-    }
-
-    .social-btn.google {
-      background: #fff;
-      color: #222;
-      border: 1px solid #ddd;
-    }
-
-    .social-btn.naver {
-      background: #1ec800;
-      color: #fff;
-    }
-
-    .social-btn.kakao {
-      background: #fee500;
-      color: #3c1e1e;
+      display: block;
+      border: none;
+      background: none;
+      padding: 0;
     }
 
     .close-popup {
@@ -242,36 +231,66 @@
       cursor: pointer;
     }
 
-    .social-btn img {
-      display: block;
-      margin: 0 auto;
-      height: 32px;
+    @media (max-width: 600px) {
+      .header-row {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        max-width: 100%;
+        margin-top: 0;
+      }
+      .logo {
+        position: static;
+        display: block;
+        text-align: left;
+        margin-bottom: 0;
+        font-size: 30px;
+      }
+      .header-actions {
+        justify-content: flex-end;
+        width: auto;
+      }
+      .login-btn {
+        position: static;
+        display: block;
+        width: auto;
+        margin-bottom: 0;
+        margin-top: 0;
+      }
+      .search-bar {
+        max-width: 100%;
+        width: 100%;
+        margin-bottom: 32px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="logo">BIASBREAKER</div>
-  <button class="login-btn">로그인</button>
-
   <!-- 로그인 팝업 -->
   <div class="login-popup">
     <div class="login-popup-content">
       <h3>소셜 로그인</h3>
-      <button class="social-btn google"><img src="image/google.png" alt="Google로 로그인" /></button>
-      <button class="social-btn naver"><img src="image/naver.png" alt="네이버로 로그인" /></button>
-      <button class="social-btn kakao"><img src="image/kakao.png" alt="카카오로 로그인" /></button>
+      <img src="image/google.png" alt="Google로 로그인" class="social-login-img" tabindex="0" data-provider="google" />
+      <img src="image/naver.png" alt="네이버로 로그인" class="social-login-img" tabindex="0" data-provider="naver" />
+      <img src="image/kakao.png" alt="카카오로 로그인" class="social-login-img" tabindex="0" data-provider="kakao" />
       <button class="close-popup">닫기</button>
     </div>
   </div>
 
   <header>
     <div class="header-row">
-      <div class="search-bar">
-        <input type="text" placeholder="궁금한 이슈를 검색하세요" />
-        <button class="search-btn">🔍</button>
+      <div class="logo" onclick="window.location.href='landing_page.html'" style="cursor:pointer;">BIASBREAKER</div>
+      <div class="header-actions">
+        <button class="login-btn">로그인</button>
       </div>
     </div>
   </header>
+
+  <div class="search-bar">
+    <input type="text" placeholder="궁금한 이슈를 검색하세요" />
+    <button class="search-btn">🔍</button>
+  </div>
 
   <main>
     <!-- 요약 카드 -->
@@ -346,6 +365,20 @@
     });
     loginPopup.addEventListener('mousedown', (e) => {
       if (e.target === loginPopup) loginPopup.style.display = 'none';
+    });
+
+    // 소셜 이미지 버튼 클릭 및 키보드 접근성
+    document.querySelectorAll('.social-img-btn').forEach(function(img) {
+      img.addEventListener('click', function() {
+        // 실제 로그인 로직 연결 필요
+        alert(this.alt + ' 클릭됨');
+      });
+      img.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          img.click();
+        }
+      });
     });
   </script>
 </body>
