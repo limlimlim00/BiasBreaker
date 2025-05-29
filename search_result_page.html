@@ -510,6 +510,24 @@
         searchInput.placeholder = '';
       }
     })();
+
+    // 검색 버튼 클릭 시 입력값이 있으면 결과 페이지로 이동
+    const searchBtn = document.querySelector('.search-btn');
+    const searchInputBox = document.querySelector('.search-bar input');
+    searchBtn.addEventListener('click', function() {
+      if (searchInputBox.value.trim()) {
+        const query = encodeURIComponent(searchInputBox.value.trim());
+        window.location.href = `search_result_page.html?query=${query}`;
+      }
+    });
+    // 엔터키 입력 시에도 동일하게 동작
+    searchInputBox.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && searchInputBox.value.trim()) {
+        const query = encodeURIComponent(searchInputBox.value.trim());
+        window.location.href = `search_result_page.html?query=${query}`;
+      }
+    });
+    
   </script>
 </body>
 </html>
