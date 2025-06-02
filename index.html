@@ -282,10 +282,8 @@
     document.querySelector(".login-popup").style.display = "none";
   }
 </script>
-
-
-  
 </head>
+
 <body>
   <header>
     <div class="header-row">
@@ -304,13 +302,28 @@
     <button class="search-btn">🔍</button>
   </div>
 
+
   <!-- 로그인 팝업 -->
   <div class="login-popup">
     <div class="login-popup-content">
       <h3>소셜 로그인</h3>
-      <img src="image/google.png" alt="Google로 로그인" class="social-img-btn" style="height:32px; cursor:pointer; margin-bottom:8px;" />
-      <img src="image/naver.png" alt="네이버로 로그인" class="social-img-btn" style="height:32px; cursor:pointer; margin-bottom:8px;" />
-      <img src="image/kakao.png" alt="카카오로 로그인" class="social-img-btn" style="height:32px; cursor:pointer; margin-bottom:8px;" />
+      <!--구글 로그인-->
+      <div id="g_id_onload"
+      data-client_id="537494062461-3gmsohi2vihch382j2kg4qpfunnrpb0i.apps.googleusercontent.com"
+      data-callback="handleCredentialResponse"
+      data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin"
+      data-type="standard"
+      data-shape="rectangular"
+      data-theme="outline"
+      data-text="signin_with"
+      data-size="large"
+      data-logo_alignment="left">
+      </div>
+
+      <img src="image/naver.png" alt="네이버로 로그인" class="social-login-img" tabindex="0" data-provider="naver" />
+      <img src="image/kakao.png" alt="카카오로 로그인" class="social-login-img" tabindex="0" data-provider="kakao" />
       <button class="close-popup">닫기</button>
     </div>
   </div>
