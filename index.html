@@ -214,6 +214,27 @@
       padding: 0;
     }
 
+    .user-info {
+      position: fixed;
+      top: 40px;
+      right: 40px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 10;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .logout-btn {
+     background: black;
+     color: white;
+     border: none;
+     padding: 8px 16px;
+     border-radius: 20px;
+     cursor: pointer;
+     }
+
     .close-popup {
       background: none;
       border: none;
@@ -224,6 +245,45 @@
     }
   </style>
 
+  <!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+  function decodeJWT(token) {
+    let base64Url = token.split(".")[1];
+    let base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    let jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map(function (c) {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join("")
+    );
+    return JSON.parse(jsonPayload);
+  }
+
+  function handleCredentialResponse(response) {
+    const responsePayload = decodeJWT(response.credential);
+    console.log("✅ Google 로그인 성공");
+    console.log("👤 이름: " + responsePayload.name);
+    console.log("📧 이메일: " + responsePayload.email);
+    console.log("🖼️ 프로필 사진: " + responsePayload.picture);
+
+    localStorage.setItem("userName", responsePayload.name);
+    localStorage.setItem("userEmail", responsePayload.email);
+    localStorage.setItem("userPicture", responsePayload.picture);
+
+    document.querySelector(".login-btn").style.display = "none";
+    document.querySelector(".user-info").style.display = "flex";
+    document.querySelector(".user-name").textContent = responsePayload.name;
+    document.querySelector(".login-popup").style.display = "none";
+
+    alert(`${responsePayload.name}님 환영합니다!`);
+    document.querySelector(".login-popup").style.display = "none";
+  }
+</script>
+
+
   
 </head>
 <body>
@@ -232,8 +292,11 @@
       <div class="logo" onclick="window.location.href='index.html'" style="cursor:pointer;">BIASBREAKER</div>
       <div class="header-actions">
         <button class="login-btn">로그인</button>
+        <div class="user-info" style="display:none; align-items: center; gap: 8px;">
+        <span class="user-name" style="font-weight: bold;"></span>
+        <button class="logout-btn" style="background: none; border: none; cursor: pointer; color: #555;">로그아웃</button>
       </div>
-    </div>
+    </div>    
   </header>
 
   <div class="search-bar">
@@ -245,9 +308,9 @@
   <div class="login-popup">
     <div class="login-popup-content">
       <h3>소셜 로그인</h3>
-      <img src="image/google.png" alt="Google로 로그인" class="social-login-img" tabindex="0" data-provider="google" />
-      <img src="image/naver.png" alt="네이버로 로그인" class="social-login-img" tabindex="0" data-provider="naver" />
-      <img src="image/kakao.png" alt="카카오로 로그인" class="social-login-img" tabindex="0" data-provider="kakao" />
+      <img src="image/google.png" alt="Google로 로그인" class="social-img-btn" style="height:32px; cursor:pointer; margin-bottom:8px;" />
+      <img src="image/naver.png" alt="네이버로 로그인" class="social-img-btn" style="height:32px; cursor:pointer; margin-bottom:8px;" />
+      <img src="image/kakao.png" alt="카카오로 로그인" class="social-img-btn" style="height:32px; cursor:pointer; margin-bottom:8px;" />
       <button class="close-popup">닫기</button>
     </div>
   </div>
@@ -364,6 +427,24 @@
     // 바깥 클릭 시 닫기
     loginPopup.addEventListener('mousedown', (e) => {
       if (e.target === loginPopup) loginPopup.style.display = 'none';
+    });
+
+    //저장된 로그인 정보 확인
+    window.addEventListener("DOMContentLoaded", () => {
+      const name = localStorage.getItem("userName");
+      if (name) {
+        document.querySelector(".user-name").textContent = name;
+        document.querySelector(".login-btn").style.display = "none";
+        document.querySelector(".user-info").style.display = "flex";
+      }
+    });
+
+    // 로그아웃 버튼 클릭 시
+    document.querySelector(".logout-btn").addEventListener("click", () => {
+        localStorage.clear();
+        document.querySelector(".login-btn").style.display = "inline-block";
+        document.querySelector(".user-info").style.display = "none";
+        document.querySelector(".user-name").textContent = "";
     });
 
     // 소셜 이미지 버튼 클릭 및 키보드 접근성
