@@ -75,7 +75,8 @@
       max-width: 800px;
       width: 100%;
       flex: 1;
-      margin: 64px auto 24px; /* Adjusted for fixed header */}
+      margin: 64px auto 24px;
+    }
 
     .search-bar input {
       flex: 1;
@@ -87,7 +88,7 @@
     }
     .search-bar input:focus {
       outline: none;
-      border-color: black; /* focus border color */
+      border-color: black;
     }
     .search-btn {
       padding: 10px 20px;
@@ -133,13 +134,13 @@
     }
 
     .summary-box.negative h3 {
-      color: #c0392b; /* darker red for 부정 */
+      color: #c0392b;
       margin-bottom: 12px;
       text-align: center;
     }
 
     .summary-box.positive h3 {
-      color: #158a5a; /* darker green for 긍정 */
+      color: #158a5a;
       margin-bottom: 12px;
       text-align: center;
     }
@@ -152,13 +153,13 @@
 
     .summary-box.negative { 
       background: #ffeaea; 
-      width: 400px; /* fixed width for 부정 box */
-      min-width: 200px; /* ensure minimum width */
+      width: 400px;
+      min-width: 200px;
     }
     .summary-box.positive {
       background: #e7f9ee; 
-      width: 400px; /* fixed width for 긍정 box */
-      min-width: 200px; /* ensure minimum width */
+      width: 400px;
+      min-width: 200px;
     }
 
     .link-row {
@@ -180,7 +181,7 @@
       margin-top: 0px;
       flex: 1;
       min-width: 150px;
-      width: 100%; /* ensure full width inside container */
+      width: 100%;
       box-sizing: border-box;
     }
 
@@ -249,7 +250,7 @@
      padding: 8px 16px;
      border-radius: 20px;
      cursor: pointer;
-     }
+    }
 
     .close-popup {
       background: none;
@@ -288,9 +289,6 @@
     }
 
     .share-btn-fixed {
-      position: fixed;
-      bottom: 40px;
-      right: 40px;
       background: gray;
       color: white;
       font-weight: bold;
@@ -302,9 +300,6 @@
     }
 
     .archive-btn-fixed {
-      position: fixed;
-      bottom: 100px;
-      right: 40px;
       background: #888;
       color: white;
       font-weight: bold;
@@ -314,9 +309,71 @@
     .archive-btn-fixed:hover, .archive-btn-fixed:focus {
       background: #222;
     }
-    
+
+    /* 캡션 스타일 수정 */
+    .share-caption, .archive-caption {
+      display: none;
+      margin-right: 12px;
+      background: rgba(30,30,30,0.95);
+      color: white;
+      font-size: 14px;
+      padding: 6px 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      white-space: nowrap;
+      position: static;
+    }
+
+    /* 버튼 래퍼 스타일 수정 */
+    .share-btn-wrapper, .archive-btn-wrapper {
+      position: fixed;
+      right: 40px;
+      z-index: 12000;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .share-btn-wrapper {
+      bottom: 40px;
+    }
+
+    .archive-btn-wrapper {
+      bottom: 100px;
+    }
+
+    .user-dropdown {
+      display: none;
+      position: absolute;
+      top: 36px;
+      right: 0;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      min-width: 120px;
+      z-index: 100;
+    }
+
+    .dropdown-item {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 12px 20px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .dropdown-item:hover {
+      background: #f5f5f5;
+    }
+
+    .dropdown-item.logout-item {
+      color: #d00;
+    }
   </style>
- <!-- Google Identity Services -->
+
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
   function decodeJWT(token) {
@@ -331,6 +388,14 @@
         .join("")
     );
     return JSON.parse(jsonPayload);
+  }
+
+  function updateArchiveBtnVisibility() {
+    const name = localStorage.getItem("userName");
+    const archiveBtnWrapper = document.querySelector('.archive-btn-wrapper');
+    if (archiveBtnWrapper) {
+      archiveBtnWrapper.style.display = name ? 'flex' : 'none';
+    }
   }
 
   function handleCredentialResponse(response) {
@@ -350,12 +415,12 @@
     document.querySelector(".login-popup").style.display = "none";
 
     alert(`${responsePayload.name}님 환영합니다!`);
-    document.querySelector(".login-popup").style.display = "none";
+    updateArchiveBtnVisibility();
   }
 </script>
 </head>
+
 <body>
-  <!-- 로그인 팝업 -->
   <div class="login-popup">
     <div class="login-popup-content">
       <h3>소셜 로그인</h3>
@@ -384,10 +449,15 @@
       <div class="logo" onclick="window.location.href='index.html'" style="cursor:pointer;">BIASBREAKER</div>
       <div class="header-actions">
         <button class="login-btn">로그인</button>
-        <div class="user-info" style="display:none; align-items: center; gap: 8px;">
-        <span class="user-name" style="font-weight: bold;"></span>
-        <button class="logout-btn" style="background: none; border: none; cursor: pointer; color: #555;">로그아웃</button>
-      </div>
+        <div class="user-info" style="display:none; align-items: center; gap: 8px; position:relative;">
+          <span class="user-name" style="font-weight: bold; cursor:pointer;"></span>
+          <div class="user-dropdown">
+            <button class="dropdown-item history-item">히스토리</button>
+            <button class="dropdown-item archive-item">아카이브</button>
+            <button class="dropdown-item logout-item">로그아웃</button>
+          </div>
+        </div>
+      </div>    
     </div>    
   </header>
 
@@ -397,7 +467,6 @@
   </div>
 
   <main>
-    <!-- 요약 카드 -->
     <div class="result-container">
       <div class="summary-box common">
         <h3>공통</h3>
@@ -442,19 +511,20 @@
         </div>
       </div>
     </div>
-    <!-- 아카이브 버튼 (공유 버튼 위에 위치) -->
-    <div class="archive-btn-wrapper" style="position:fixed; bottom:110px; right:90px; z-index:12000; display:flex; flex-direction:row; align-items:center;">
-      <span class="archive-caption" style="display:none; margin-right:12px; background:rgba(30,30,30,0.95); color:white; font-size:14px; padding:6px 16px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.12); white-space:nowrap; position:static;">아카이브하기</span>
+
+    <!-- 수정된 아카이브 버튼 -->
+    <div class="archive-btn-wrapper">
+      <span class="archive-caption">아카이브하기</span>
       <button class="archive-btn-fixed" aria-label="아카이브하기">🗂️</button>
     </div>
-    <!-- 공유 버튼 -->
-    <div class="share-btn-wrapper" style="position:fixed; bottom:50px; right:90px; z-index:12000; display:flex; flex-direction:row; align-items:center;">
-      <span class="share-caption" style="display:none; margin-right:12px; background:rgba(30,30,30,0.95); color:white; font-size:14px; padding:6px 16px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.12); white-space:nowrap; position:static;">공유하기</span>
+
+    <!-- 수정된 공유 버튼 -->
+    <div class="share-btn-wrapper">
+      <span class="share-caption">공유하기</span>
       <button class="share-btn-fixed" aria-label="공유하기">🔗</button>
     </div>
   </main>
 
-  <!-- 아카이브 완료 팝업 -->
   <div class="archive-popup" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.2); z-index:10000; align-items:center; justify-content:center;">
     <div style="background:white; border-radius:16px; padding:32px 24px; min-width:220px; box-shadow:0 8px 32px rgba(0,0,0,0.15); display:flex; flex-direction:column; align-items:center; gap:12px;">
       <div style="font-size:32px; color:#158a5a;">📁</div>
@@ -494,7 +564,7 @@
       if (e.target === loginPopup) loginPopup.style.display = 'none';
     });
 
-    //저장된 로그인 정보 확인
+    // 저장된 로그인 정보 확인
     window.addEventListener("DOMContentLoaded", () => {
       const name = localStorage.getItem("userName");
       if (name) {
@@ -502,32 +572,10 @@
         document.querySelector(".login-btn").style.display = "none";
         document.querySelector(".user-info").style.display = "flex";
       }
+      updateArchiveBtnVisibility();
     });
 
-
-    // 로그아웃 버튼 클릭 시
-    document.querySelector(".logout-btn").addEventListener("click", () => {
-        localStorage.clear();
-        document.querySelector(".login-btn").style.display = "inline-block";
-        document.querySelector(".user-info").style.display = "none";
-        document.querySelector(".user-name").textContent = "";
-    });
-
-    // 소셜 이미지 버튼 클릭 및 키보드 접근성
-    document.querySelectorAll('.social-img-btn').forEach(function(img) {
-      img.addEventListener('click', function() {
-        // 실제 로그인 로직 연결 필요
-        alert(this.alt + ' 클릭됨');
-      });
-      img.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          img.click();
-        }
-      });
-    });
-
-    // 공유 버튼 기능 (fixed button)
+    // 공유 버튼 기능
     const shareBtnFixed = document.querySelector('.share-btn-fixed');
     const sharePopup = document.querySelector('.share-popup');
     if (shareBtnFixed) {
@@ -544,11 +592,32 @@
       });
     }
 
-    // 아카이브 버튼 기능 (fixed button)
+    // 아카이브 버튼 기능
     const archiveBtnFixed = document.querySelector('.archive-btn-fixed');
     const archivePopup = document.querySelector('.archive-popup');
     if (archiveBtnFixed && archivePopup) {
       archiveBtnFixed.addEventListener('click', () => {
+        const name = localStorage.getItem("userName");
+        if (!name) return;
+        
+        const params = new URLSearchParams(window.location.search);
+        const query = params.get('query');
+        if (!query) return;
+        
+        let archive = [];
+        try {
+          archive = JSON.parse(localStorage.getItem('archiveHistory') || '[]');
+        } catch (e) { archive = []; }
+        
+        archive = archive.filter(item => item.query !== query);
+        
+        const now = new Date();
+        const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        
+        archive.unshift({ query, date: dateStr });
+        archive = archive.slice(0, 30);
+        localStorage.setItem('archiveHistory', JSON.stringify(archive));
+        
         archivePopup.style.display = 'flex';
         setTimeout(() => {
           archivePopup.style.display = 'none';
@@ -556,11 +625,88 @@
       });
     }
 
-    // 공유 버튼 캡션 표시
-    const shareBtnWrapper = document.querySelector('.share-btn-wrapper');
+    // 검색 기능
+    const searchBtn = document.querySelector('.search-btn');
+    const searchInputBox = document.querySelector('.search-bar input');
+    
+    searchBtn.addEventListener('click', function() {
+      if (searchInputBox.value.trim()) {
+        const query = encodeURIComponent(searchInputBox.value.trim());
+        window.location.href = `search_result_page.html?query=${query}`;
+      }
+    });
+    
+    searchInputBox.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && searchInputBox.value.trim()) {
+        const query = encodeURIComponent(searchInputBox.value.trim());
+        window.location.href = `search_result_page.html?query=${query}`;
+      }
+    });
+
+    // URL 파라미터에서 query 읽어서 검색창에 자동 입력
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const query = params.get('query');
+      if (query) {
+        searchInput.value = decodeURIComponent(query);
+        searchInput.placeholder = '';
+      }
+    })();
+
+    // 사용자 드롭다운 메뉴 로직
+    const userNameSpan = document.querySelector('.user-name');
+    const userDropdown = document.querySelector('.user-dropdown');
+    
+    if (userNameSpan && userDropdown) {
+      let dropdownOpen = false;
+      
+      userNameSpan.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdownOpen = !dropdownOpen;
+        userDropdown.style.display = dropdownOpen ? 'block' : 'none';
+      });
+      
+      document.addEventListener('click', (e) => {
+        if (dropdownOpen && !userDropdown.contains(e.target) && e.target !== userNameSpan) {
+          userDropdown.style.display = 'none';
+          dropdownOpen = false;
+        }
+      });
+      
+      const historyItem = userDropdown.querySelector('.history-item');
+      const archiveItem = userDropdown.querySelector('.archive-item');
+      const logoutItem = userDropdown.querySelector('.logout-item');
+      
+      if (historyItem) {
+        historyItem.addEventListener('click', () => {
+          window.location.href = 'history.html#history';
+        });
+      }
+      
+      if (archiveItem) {
+        archiveItem.addEventListener('click', () => {
+          window.location.href = 'history.html#archive';
+        });
+      }
+      
+      if (logoutItem) {
+        logoutItem.addEventListener('click', () => {
+          localStorage.clear();
+          document.querySelector('.login-btn').style.display = 'inline-block';
+          document.querySelector('.user-info').style.display = 'none';
+          document.querySelector('.user-name').textContent = '';
+          userDropdown.style.display = 'none';
+          dropdownOpen = false;
+          updateArchiveBtnVisibility();
+        });
+      }
+    }
+
+    // 캡션 표시 기능 - 수정된 부분
     const shareBtn = document.querySelector('.share-btn-fixed');
     const shareCaption = document.querySelector('.share-caption');
-    if (shareBtn && shareCaption && shareBtnWrapper) {
+    
+    if (shareBtn && shareCaption) {
       shareBtn.addEventListener('mouseenter', () => {
         shareCaption.style.display = 'block';
       });
@@ -575,11 +721,10 @@
       });
     }
 
-    // 아카이브 버튼 캡션 표시
-    const archiveBtnWrapper = document.querySelector('.archive-btn-wrapper');
     const archiveBtn = document.querySelector('.archive-btn-fixed');
     const archiveCaption = document.querySelector('.archive-caption');
-    if (archiveBtn && archiveCaption && archiveBtnWrapper) {
+    
+    if (archiveBtn && archiveCaption) {
       archiveBtn.addEventListener('mouseenter', () => {
         archiveCaption.style.display = 'block';
       });
@@ -594,33 +739,6 @@
       });
     }
 
-    // 검색 결과 페이지 진입 시 URL의 query 파라미터를 읽어 검색창 input에 자동으로 입력
-    (function() {
-      const params = new URLSearchParams(window.location.search);
-      const query = params.get('query');
-      if (query) {
-        searchInput.value = decodeURIComponent(query);
-        searchInput.placeholder = '';
-      }
-    })();
-
-    // 검색 버튼 클릭 시 입력값이 있으면 결과 페이지로 이동
-    const searchBtn = document.querySelector('.search-btn');
-    const searchInputBox = document.querySelector('.search-bar input');
-    searchBtn.addEventListener('click', function() {
-      if (searchInputBox.value.trim()) {
-        const query = encodeURIComponent(searchInputBox.value.trim());
-        window.location.href = `search_result_page.html?query=${query}`;
-      }
-    });
-    // 엔터키 입력 시에도 동일하게 동작
-    searchInputBox.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' && searchInputBox.value.trim()) {
-        const query = encodeURIComponent(searchInputBox.value.trim());
-        window.location.href = `search_result_page.html?query=${query}`;
-      }
-    });
-    
   </script>
 </body>
 </html>

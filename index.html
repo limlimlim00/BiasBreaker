@@ -233,7 +233,7 @@
      padding: 8px 16px;
      border-radius: 20px;
      cursor: pointer;
-     }
+    }
 
     .close-popup {
       background: none;
@@ -242,6 +242,37 @@
       font-size: 15px;
       margin-top: 8px;
       cursor: pointer;
+    }
+
+    .user-dropdown {
+      display: none;
+      position: absolute;
+      top: 36px;
+      right: 0;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      min-width: 120px;
+      z-index: 100;
+    }
+
+    .dropdown-item {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 12px 20px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .dropdown-item:hover {
+      background: #f5f5f5;
+    }
+
+    .dropdown-item.logout-item {
+      color: #d00;
     }
   </style>
 
@@ -290,11 +321,15 @@
       <div class="logo" onclick="window.location.href='index.html'" style="cursor:pointer;">BIASBREAKER</div>
       <div class="header-actions">
         <button class="login-btn">로그인</button>
-        <div class="user-info" style="display:none; align-items: center; gap: 8px;">
-        <span class="user-name" style="font-weight: bold;"></span>
-        <button class="logout-btn" style="background: none; border: none; cursor: pointer; color: #555;">로그아웃</button>
-      </div>
-    </div>    
+        <div class="user-info" style="display:none; align-items: center; gap: 8px; position:relative;">
+          <span class="user-name" style="font-weight: bold; cursor:pointer;"></span>
+          <div class="user-dropdown" style="display:none; position:absolute; top:36px; right:0; background:#fff; border:1px solid #ddd; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.08); min-width:120px; z-index:100;">
+            <button class="dropdown-item history-item" style="width:100%; background:none; border:none; padding:12px 20px; text-align:left; cursor:pointer; font-size:14px;">히스토리</button>
+            <button class="dropdown-item archive-item" style="width:100%; background:none; border:none; padding:12px 20px; text-align:left; cursor:pointer; font-size:14px;">아카이브</button>
+            <button class="dropdown-item logout-item" style="width:100%; background:none; border:none; padding:12px 20px; text-align:left; cursor:pointer; color:#d00; font-size:14px;">로그아웃</button>
+          </div>
+        </div>
+      </div>    
   </header>
 
   <div class="search-bar">
@@ -452,13 +487,47 @@
       }
     });
 
-    // 로그아웃 버튼 클릭 시
-    document.querySelector(".logout-btn").addEventListener("click", () => {
-        localStorage.clear();
-        document.querySelector(".login-btn").style.display = "inline-block";
-        document.querySelector(".user-info").style.display = "none";
-        document.querySelector(".user-name").textContent = "";
-    });
+    // 사용자 드롭다운 메뉴 로직 - 안전한 요소 참조
+    const userNameSpan = document.querySelector('.user-name');
+    const userDropdown = document.querySelector('.user-dropdown');
+    if (userNameSpan && userDropdown) {
+      let dropdownOpen = false;
+      userNameSpan.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdownOpen = !dropdownOpen;
+        userDropdown.style.display = dropdownOpen ? 'block' : 'none';
+      });
+      document.addEventListener('click', (e) => {
+        if (dropdownOpen && !userDropdown.contains(e.target) && e.target !== userNameSpan) {
+          userDropdown.style.display = 'none';
+          dropdownOpen = false;
+        }
+      });
+      // 드롭다운 메뉴 항목 클릭 이벤트 - 요소 존재 확인 후 처리
+      const historyItem = userDropdown.querySelector('.history-item');
+      const archiveItem = userDropdown.querySelector('.archive-item');
+      const logoutItem = userDropdown.querySelector('.logout-item');
+      if (historyItem) {
+        historyItem.addEventListener('click', () => {
+          window.location.href = 'history.html#history';
+        });
+      }
+      if (archiveItem) {
+        archiveItem.addEventListener('click', () => {
+          window.location.href = 'history.html#archive';
+        });
+      }
+      if (logoutItem) {
+        logoutItem.addEventListener('click', () => {
+          localStorage.clear();
+          document.querySelector('.login-btn').style.display = 'inline-block';
+          document.querySelector('.user-info').style.display = 'none';
+          document.querySelector('.user-name').textContent = '';
+          userDropdown.style.display = 'none';
+          dropdownOpen = false;
+        });
+      }
+    }
 
     // 소셜 이미지 버튼 클릭 및 키보드 접근성
     document.querySelectorAll('.social-img-btn').forEach(function(img) {
@@ -490,6 +559,8 @@
         window.location.href = `search_result_page.html?query=${query}`;
       }
     });
+
+    
   </script>
 </body>
 </html>
