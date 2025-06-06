@@ -364,11 +364,9 @@
       cursor: pointer;
       font-size: 14px;
     }
-
     .dropdown-item:hover {
       background: #f5f5f5;
     }
-
     .dropdown-item.logout-item {
       color: #d00;
     }
@@ -449,12 +447,12 @@
       <div class="logo" onclick="window.location.href='index.html'" style="cursor:pointer;">BIASBREAKER</div>
       <div class="header-actions">
         <button class="login-btn">로그인</button>
-        <div class="user-info" style="display:none; align-items: center; gap: 8px; position:relative;">
+        <div class="user-info" style="display:none; align-items: center; gap: 8px;">
           <span class="user-name" style="font-weight: bold; cursor:pointer;"></span>
           <div class="user-dropdown">
             <button class="dropdown-item history-item">히스토리</button>
             <button class="dropdown-item archive-item">아카이브</button>
-            <button class="dropdown-item logout-item">로그아웃</button>
+            <button class="dropdown-item logout-item" style="color:#d00;">로그아웃</button>
           </div>
         </div>
       </div>    
