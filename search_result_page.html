@@ -736,7 +736,48 @@
         archiveCaption.style.display = 'none';
       });
     }
+    
+    // query -> A100 server
+    (async () => {
+      const params = new URLSearchParams(window.location.search);
+      const query = params.get('query');
+      if (!query) return;
+    
+      try {
+        const res = await fetch("http://103.19.91.142:8000/summarize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tag: decodeURIComponent(query) })
+        });
+        const data = await res.json();
+    
+        // 요약 반영
+        const updateList = (selector, list) => {
+          const ul = document.querySelector(selector);
+          if (!ul) return;
+          ul.innerHTML = list.map(item => `<li>${item}</li>`).join('');
+        };
+        
+        // 링크 목록 삽입 함수
+        const updateLinkList = (selector, articles) => {
+          const ul = document.querySelector(selector);
+          if (!ul || !Array.isArray(articles)) return;
+          ul.innerHTML = articles
+            .map(item => `<li><a href="${item.url}" target="_blank" rel="noopener noreferrer">${item.title}</a></li>`)
+            .join('');
+        };
 
+        updateList(".summary-box.common ul", data.common_ground || []);
+        updateList(".summary-box.positive ul", data.positive_summary || []);
+        updateList(".summary-box.negative ul", data.negative_summary || []);
+        updateLinkList(".link-row .link-box:first-of-type ul", data.negative_articles || []);
+        updateLinkList(".link-row .link-box:last-of-type ul", data.positive_articles || []);
+    
+      } catch (e) {
+        alert("⚠️ 서버와 연결할 수 없습니다.");
+        console.error(e);
+      }
+    })();
   </script>
 </body>
 </html>
