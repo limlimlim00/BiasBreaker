@@ -298,9 +298,16 @@
     console.log("📧 이메일: " + responsePayload.email);
     console.log("🖼️ 프로필 사진: " + responsePayload.picture);
 
-    localStorage.setItem("userName", responsePayload.name);
-    localStorage.setItem("userEmail", responsePayload.email);
-    localStorage.setItem("userPicture", responsePayload.picture);
+    fetch("/save_user.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({
+      name: responsePayload.name,
+      email: responsePayload.email,
+      picture: responsePayload.picture
+    })
+  });
 
     document.querySelector(".login-btn").style.display = "none";
     document.querySelector(".user-info").style.display = "flex";
@@ -477,14 +484,22 @@
     });
 
     //저장된 로그인 정보 확인
-    window.addEventListener("DOMContentLoaded", () => {
-      const name = localStorage.getItem("userName");
-      if (name) {
-        document.querySelector(".user-name").textContent = name;
-        document.querySelector(".login-btn").style.display = "none";
-        document.querySelector(".user-info").style.display = "flex";
-      }
-    });
+    window.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const res = await fetch("/me.php", { credentials: "include" });
+    if (!res.ok) throw new Error();
+    const user = await res.json();
+    
+    document.querySelector(".user-name").textContent = user.name;
+    document.querySelector(".login-btn").style.display = "none";
+    document.querySelector(".user-info").style.display = "flex";
+  } catch {
+    document.querySelector(".login-btn").style.display = "inline-block";
+    document.querySelector(".user-info").style.display = "none";
+    document.querySelector(".user-name").textContent = '';
+  }
+});
+
 
     // 사용자 드롭다운 메뉴 로직 - 안전한 요소 참조
     const userNameSpan = document.querySelector('.user-name');
@@ -517,16 +532,22 @@
         });
       }
       if (logoutItem) {
-        logoutItem.addEventListener('click', () => {
-          localStorage.clear();
-          document.querySelector('.login-btn').style.display = 'inline-block';
-          document.querySelector('.user-info').style.display = 'none';
-          document.querySelector('.user-name').textContent = '';
-          userDropdown.style.display = 'none';
-          dropdownOpen = false;
+        logoutItem.addEventListener('click', async () => {
+            try {
+                await fetch('/logout.php', { credentials: 'include' });
+                } catch (err) {
+                console.warn("서버 로그아웃 실패", err);
+                }
+
+        document.querySelector('.login-btn').style.display = 'inline-block';
+        document.querySelector('.user-info').style.display = 'none';
+        document.querySelector('.user-name').textContent = '';
+        userDropdown.style.display = 'none';
+        dropdownOpen = false;
+        alert('로그아웃 되었습니다.');
         });
-      }
-    }
+   }
+}
 
     // 소셜 이미지 버튼 클릭 및 키보드 접근성
     document.querySelectorAll('.social-img-btn').forEach(function(img) {

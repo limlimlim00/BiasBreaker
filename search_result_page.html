@@ -388,13 +388,20 @@
     return JSON.parse(jsonPayload);
   }
 
-  function updateArchiveBtnVisibility() {
-    const name = localStorage.getItem("userName");
-    const archiveBtnWrapper = document.querySelector('.archive-btn-wrapper');
-    if (archiveBtnWrapper) {
-      archiveBtnWrapper.style.display = name ? 'flex' : 'none';
-    }
+  async function updateArchiveBtnVisibility() {
+  const archiveBtnWrapper = document.querySelector('.archive-btn-wrapper');
+  if (!archiveBtnWrapper) return;
+
+  try {
+    const res = await fetch('/me.php', { credentials: 'include' });
+    if (!res.ok) throw new Error();
+    await res.json();
+    archiveBtnWrapper.style.display = 'flex';
+  } catch {
+    archiveBtnWrapper.style.display = 'none';
   }
+}
+
 
   function handleCredentialResponse(response) {
     const responsePayload = decodeJWT(response.credential);
@@ -403,9 +410,16 @@
     console.log("📧 이메일: " + responsePayload.email);
     console.log("🖼️ 프로필 사진: " + responsePayload.picture);
 
-    localStorage.setItem("userName", responsePayload.name);
-    localStorage.setItem("userEmail", responsePayload.email);
-    localStorage.setItem("userPicture", responsePayload.picture);
+    fetch("/save_user.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({
+      name: responsePayload.name,
+      email: responsePayload.email,
+      picture: responsePayload.picture
+    })
+  });
 
     document.querySelector(".login-btn").style.display = "none";
     document.querySelector(".user-info").style.display = "flex";
@@ -413,7 +427,7 @@
     document.querySelector(".login-popup").style.display = "none";
 
     alert(`${responsePayload.name}님 환영합니다!`);
-    updateArchiveBtnVisibility();
+    document.querySelector(".login-popup").style.display = "none";
   }
 </script>
 </head>
@@ -563,15 +577,24 @@
     });
 
     // 저장된 로그인 정보 확인
-    window.addEventListener("DOMContentLoaded", () => {
-      const name = localStorage.getItem("userName");
-      if (name) {
-        document.querySelector(".user-name").textContent = name;
-        document.querySelector(".login-btn").style.display = "none";
-        document.querySelector(".user-info").style.display = "flex";
-      }
-      updateArchiveBtnVisibility();
-    });
+    window.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const res = await fetch("/me.php", { credentials: "include" });
+    if (!res.ok) throw new Error();
+    const user = await res.json();
+    
+    document.querySelector(".user-name").textContent = user.name;
+    document.querySelector(".login-btn").style.display = "none";
+    document.querySelector(".user-info").style.display = "flex";
+  } catch {
+    document.querySelector(".login-btn").style.display = "inline-block";
+    document.querySelector(".user-info").style.display = "none";
+    document.querySelector(".user-name").textContent = '';
+  }
+  updateArchiveBtnVisibility();
+
+});
+
 
     // 공유 버튼 기능
     const shareBtnFixed = document.querySelector('.share-btn-fixed');
@@ -590,38 +613,55 @@
       });
     }
 
-    // 아카이브 버튼 기능
     const archiveBtnFixed = document.querySelector('.archive-btn-fixed');
-    const archivePopup = document.querySelector('.archive-popup');
-    if (archiveBtnFixed && archivePopup) {
-      archiveBtnFixed.addEventListener('click', () => {
-        const name = localStorage.getItem("userName");
-        if (!name) return;
-        
-        const params = new URLSearchParams(window.location.search);
-        const query = params.get('query');
-        if (!query) return;
-        
-        let archive = [];
-        try {
-          archive = JSON.parse(localStorage.getItem('archiveHistory') || '[]');
-        } catch (e) { archive = []; }
-        
-        archive = archive.filter(item => item.query !== query);
-        
-        const now = new Date();
-        const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-        
-        archive.unshift({ query, date: dateStr });
-        archive = archive.slice(0, 30);
-        localStorage.setItem('archiveHistory', JSON.stringify(archive));
-        
-        archivePopup.style.display = 'flex';
-        setTimeout(() => {
-          archivePopup.style.display = 'none';
-        }, 1500);
-      });
+const archivePopup = document.querySelector('.archive-popup');
+
+if (archiveBtnFixed && archivePopup) {
+  archiveBtnFixed.addEventListener('click', async () => {
+    // 서버에서 사용자 정보 확인
+    let user;
+    try {
+      const res = await fetch("/me.php", { credentials: "include" });
+      if (!res.ok) throw new Error("Not logged in");
+      user = await res.json();
+    } catch (err) {
+      console.error("로그인 정보 확인 실패", err);
+      return;
     }
+
+    // 쿼리 파라미터 추출
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get('query');
+    if (!query) return;
+
+    const htmlContent = document.documentElement.outerHTML;
+
+    try {
+      // 서버로 아카이브 저장 요청
+      const response = await fetch("/save_archive.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          query: query,
+          html: htmlContent
+        })
+      });
+
+      if (!response.ok) throw new Error("PDF 저장 실패");
+
+      // 완료 알림
+      archivePopup.style.display = 'flex';
+      setTimeout(() => {
+        archivePopup.style.display = 'none';
+      }, 1500);
+    } catch (err) {
+      console.error("아카이브 저장 실패", err);
+    }
+  });
+}
+
+    
 
     // 검색 기능
     const searchBtn = document.querySelector('.search-btn');
@@ -688,14 +728,20 @@
       }
       
       if (logoutItem) {
-        logoutItem.addEventListener('click', () => {
-          localStorage.clear();
-          document.querySelector('.login-btn').style.display = 'inline-block';
-          document.querySelector('.user-info').style.display = 'none';
-          document.querySelector('.user-name').textContent = '';
-          userDropdown.style.display = 'none';
-          dropdownOpen = false;
-          updateArchiveBtnVisibility();
+        logoutItem.addEventListener('click', async () => {
+            try {
+                await fetch('/logout.php', { credentials: 'include' });
+                } catch (err) {
+                console.warn("서버 로그아웃 실패", err);
+                }
+
+        document.querySelector('.login-btn').style.display = 'inline-block';
+        document.querySelector('.user-info').style.display = 'none';
+        document.querySelector('.user-name').textContent = '';
+        userDropdown.style.display = 'none';
+        dropdownOpen = false;
+        updateArchiveBtnVisibility();
+        alert("로그아웃 되었습니다.");
         });
       }
     }

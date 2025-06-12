@@ -224,31 +224,49 @@
   <!-- Script: All logic grouped at the bottom for clarity -->
   <script>
     // 로그인 상태 확인 및 접근 제한
-    function checkLogin() {
-      const name = localStorage.getItem('userName');
-      if (!name) {
-        window.location.replace('index.html');
-      }
-    }
-    checkLogin();
+   async function checkLogin() {
+    try {
+    const res = await fetch('/me.php', { credentials: 'include' });
+    if (!res.ok) throw new Error();
+    const user = await res.json();
+    // 로그인 상태 저장
+    window.currentUser = user; // 전역에 저장해 다른 곳에서도 사용 가능
+  } catch {
+    window.location.replace('index.html');
+  }
+}
 
-    // 헤더 로그인/로그아웃/드롭다운 UI
-    function updateLoginUI() {
-      const name = localStorage.getItem('userName');
-      const loginBtn = document.querySelector('.login-btn');
-      const userInfo = document.querySelector('.user-info');
-      const userNameSpan = document.querySelector('.user-name');
-      if (name) {
-        loginBtn.style.display = 'none';
-        userInfo.style.display = 'flex';
-        userNameSpan.textContent = name;
-      } else {
-        loginBtn.style.display = 'inline-block';
-        userInfo.style.display = 'none';
-        userNameSpan.textContent = '';
-      }
-    }
-    window.addEventListener('DOMContentLoaded', updateLoginUI);
+// 헤더 로그인/로그아웃/드롭다운 UI
+    async function updateLoginUI() {
+     try {
+     const res = await fetch('/me.php', { credentials: 'include' });
+     if (!res.ok) throw new Error();
+     const user = await res.json();
+     window.currentUser = user;
+
+    const loginBtn = document.querySelector('.login-btn');
+    const userInfo = document.querySelector('.user-info');
+    const userNameSpan = document.querySelector('.user-name');
+
+    loginBtn.style.display = 'none';
+    userInfo.style.display = 'flex';
+    userNameSpan.textContent = user.name || user.email;
+  } catch {
+    const loginBtn = document.querySelector('.login-btn');
+    const userInfo = document.querySelector('.user-info');
+    const userNameSpan = document.querySelector('.user-name');
+
+    loginBtn.style.display = 'inline-block';
+    userInfo.style.display = 'none';
+    userNameSpan.textContent = '';
+  }
+}
+
+    window.addEventListener('DOMContentLoaded', async () => {
+    await checkLogin();
+    await updateLoginUI();
+    });
+
 
     // 드롭다운 메뉴 로직
     const userNameSpan = document.querySelector('.user-name');
@@ -271,11 +289,18 @@
       const logoutItem = userDropdown.querySelector('.logout-item');
       if (historyItem) historyItem.addEventListener('click', () => { window.location.href = 'history.html#history'; });
       if (archiveItem) archiveItem.addEventListener('click', () => { window.location.href = 'history.html#archive'; });
-      if (logoutItem) logoutItem.addEventListener('click', () => {
-        localStorage.clear();
+      if (logoutItem) {
+        logoutItem.addEventListener('click', async () => {
+          try {
+            await fetch('/logout.php', { method: 'POST', credentials: 'include' });
+        } catch (err) {
+          console.error('로그아웃 요청 실패:', err);
+        }
+
         updateLoginUI();
         window.location.replace('index.html');
       });
+    }
     }
 
     // 탭 전환 및 해시 반영
@@ -303,123 +328,197 @@
       });
     });
 
-    // 히스토리/아카이브 렌더링
-    function renderHistory() {
-      const list = document.querySelector('.history-list');
-      const emptyMsg = document.querySelector('#tab-history .empty-msg');
-      list.innerHTML = '';
-      const name = localStorage.getItem('userName');
-      if (!name) {
-        emptyMsg.textContent = '로그인 후 이용 가능합니다.';
-        emptyMsg.style.display = 'block';
-        return;
+    async function renderHistory() {
+  const list = document.querySelector('.history-list');
+  const emptyMsg = document.querySelector('#tab-history .empty-msg');
+  list.innerHTML = '';
+
+  // 로그인 사용자 확인
+  let user;
+  try {
+    const res = await fetch('/me.php', { credentials: 'include' });
+    if (!res.ok) throw new Error();
+    user = await res.json();
+  } catch {
+    emptyMsg.textContent = '로그인 후 이용 가능합니다.';
+    emptyMsg.style.display = 'block';
+    return;
+  }
+
+  // 검색 기록 불러오기
+  let history = [];
+  try {
+    const res = await fetch('/history.php', { credentials: 'include' });
+    if (!res.ok) throw new Error();
+    history = await res.json();
+  } catch {
+    emptyMsg.textContent = '기록을 불러오지 못했습니다.';
+    emptyMsg.style.display = 'block';
+    return;
+  }
+
+  if (history.length === 0) {
+    emptyMsg.textContent = '검색 기록이 없습니다.';
+    emptyMsg.style.display = 'block';
+    document.getElementById('history-delete-all-btn')?.remove();
+    return;
+  }
+
+  emptyMsg.style.display = 'none';
+
+  // 전체 삭제 버튼 추가
+  if (!document.getElementById('history-delete-all-btn')) {
+    const btn = document.createElement('button');
+    btn.id = 'history-delete-all-btn';
+    btn.textContent = '전체 삭제';
+    btn.style = 'float:right; margin-bottom:10px; background:#eee; border:none; border-radius:8px; padding:6px 16px; cursor:pointer; font-size:13px;';
+    btn.onclick = async function () {
+      if (confirm('검색 기록을 모두 삭제하시겠습니까?')) {
+        await fetch('/delete_history.php', { method: 'POST', credentials: 'include' });
+        renderHistory();
       }
-      const history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-      if (history.length === 0) {
-        emptyMsg.textContent = '검색 기록이 없습니다.';
-        emptyMsg.style.display = 'block';
-        document.getElementById('history-delete-all-btn')?.remove();
-        return;
+    };
+    document.getElementById('tab-history').prepend(btn);
+  }
+
+  history.forEach((item) => {
+    const li = document.createElement('li');
+    li.className = 'history-item';
+    const url = `search_result_page.html?query=${encodeURIComponent(item.query)}`;
+    li.innerHTML = `<a href="${url}" style="text-decoration:none; color:inherit; display:flex; justify-content:space-between; align-items:center; width:100%"><span class="item-query">${item.query}</span><span class="item-date">${item.date}</span></a>`;
+
+    // 삭제 버튼
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '✕';
+    delBtn.title = '삭제';
+    delBtn.style = 'margin-left:12px; background:none; border:none; color:#d00; font-size:16px; cursor:pointer;';
+    delBtn.onclick = async function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      if (confirm('이 기록을 삭제하시겠습니까?')) {
+        await fetch('/delete_history.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ id: item.id })  // 기록 고유 ID로 삭제
+        });
+        renderHistory();
       }
-      emptyMsg.style.display = 'none';
-      // 전체 삭제 버튼 추가
-      if (!document.getElementById('history-delete-all-btn')) {
-        const btn = document.createElement('button');
-        btn.id = 'history-delete-all-btn';
-        btn.textContent = '전체 삭제';
-        btn.style = 'float:right; margin-bottom:10px; background:#eee; border:none; border-radius:8px; padding:6px 16px; cursor:pointer; font-size:13px;';
-        btn.onclick = function() {
-          if (confirm('검색 기록을 모두 삭제하시겠습니까?')) {
-            localStorage.removeItem('searchHistory');
-            renderHistory();
-          }
-        };
-        document.getElementById('tab-history').prepend(btn);
+    };
+    li.appendChild(delBtn);
+    list.appendChild(li);
+  });
+}
+
+  async function renderArchive() {
+  const list = document.querySelector('.archive-list');
+  const emptyMsg = document.querySelector('#tab-archive .empty-msg');
+  list.innerHTML = '';
+
+  // 로그인 사용자 확인
+  let user;
+  try {
+    const res = await fetch('/me.php', { credentials: 'include' });
+    if (!res.ok) throw new Error();
+    user = await res.json();
+  } catch {
+    emptyMsg.textContent = '로그인 후 이용 가능합니다.';
+    emptyMsg.style.display = 'block';
+    return;
+  }
+
+  // 아카이브 기록 불러오기
+  let archive = [];
+  try {
+    const res = await fetch('/archive.php', { credentials: 'include' });
+    if (!res.ok) throw new Error();
+    archive = await res.json();
+  } catch {
+    emptyMsg.textContent = '기록을 불러오지 못했습니다.';
+    emptyMsg.style.display = 'block';
+    return;
+  }
+
+  if (archive.length === 0) {
+    emptyMsg.textContent = '아카이브한 기록이 없습니다.';
+    emptyMsg.style.display = 'block';
+    document.getElementById('archive-delete-all-btn')?.remove();
+    return;
+  }
+
+  emptyMsg.style.display = 'none';
+
+  // 전체 삭제 버튼
+  if (!document.getElementById('archive-delete-all-btn')) {
+    const btn = document.createElement('button');
+    btn.id = 'archive-delete-all-btn';
+    btn.textContent = '전체 삭제';
+    btn.style = 'float:right; margin-bottom:10px; background:#eee; border:none; border-radius:8px; padding:6px 16px; cursor:pointer; font-size:13px;';
+    btn.onclick = async function () {
+      if (confirm('아카이브 기록을 모두 삭제하시겠습니까?')) {
+        await fetch('/delete_archive.php', { method: 'POST', credentials: 'include' });
+        renderArchive();
       }
-      history.forEach((item, idx) => {
-        const li = document.createElement('li');
-        li.className = 'history-item';
-        const url = `search_result_page.html?query=${encodeURIComponent(item.query)}`;
-        li.innerHTML = `<a href="${url}" style="text-decoration:none; color:inherit; display:flex; justify-content:space-between; align-items:center; width:100%"><span class="item-query">${item.query}</span><span class="item-date">${item.date}</span></a>`;
-        // 삭제 버튼
-        const delBtn = document.createElement('button');
-        delBtn.textContent = '✕';
-        delBtn.title = '삭제';
-        delBtn.style = 'margin-left:12px; background:none; border:none; color:#d00; font-size:16px; cursor:pointer;';
-        delBtn.onclick = function(e) {
-          e.stopPropagation();
-          e.preventDefault();
-          if (confirm('이 기록을 삭제하시겠습니까?')) {
-            const newHistory = history.filter((_, i) => i !== idx);
-            localStorage.setItem('searchHistory', JSON.stringify(newHistory));
-            renderHistory();
-          }
-        };
-        li.appendChild(delBtn);
-        list.appendChild(li);
-      });
-    }
-    function renderArchive() {
-      const list = document.querySelector('.archive-list');
-      const emptyMsg = document.querySelector('#tab-archive .empty-msg');
-      list.innerHTML = '';
-      const name = localStorage.getItem('userName');
-      if (!name) {
-        emptyMsg.textContent = '로그인 후 이용 가능합니다.';
-        emptyMsg.style.display = 'block';
-        return;
+    };
+    document.getElementById('tab-archive').prepend(btn);
+  }
+
+    archive.forEach((item) => {
+    const li = document.createElement('li');
+    li.className = 'archive-item';
+    const pdfUrl = item.pdf_path;  // 서버에서 직접 내려주는 전체 경로 사용
+
+    li.innerHTML = `
+      <a href="${pdfUrl}" target="_blank" style="text-decoration:none; color:inherit; display:flex; justify-content:space-between; align-items:center; width:100%">
+        <span class="item-query">${item.query}</span>
+        <span class="item-date">${new Date(item.created_at).toLocaleString()}</span>
+      </a>
+    `;
+
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '✕';
+    delBtn.title = '삭제';
+    delBtn.style = 'margin-left:12px; background:none; border:none; color:#d00; font-size:16px; cursor:pointer;';
+    delBtn.onclick = async function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (confirm('이 아카이브를 삭제하시겠습니까?')) {
+        await fetch('/delete_archive.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ id: item.id })
+        });
+        renderArchive();
       }
-      const archive = JSON.parse(localStorage.getItem('archiveList') || '[]');
-      if (archive.length === 0) {
-        emptyMsg.textContent = '아카이브한 기록이 없습니다.';
-        emptyMsg.style.display = 'block';
-        document.getElementById('archive-delete-all-btn')?.remove();
-        return;
-      }
-      emptyMsg.style.display = 'none';
-      // 전체 삭제 버튼 추가
-      if (!document.getElementById('archive-delete-all-btn')) {
-        const btn = document.createElement('button');
-        btn.id = 'archive-delete-all-btn';
-        btn.textContent = '전체 삭제';
-        btn.style = 'float:right; margin-bottom:10px; background:#eee; border:none; border-radius:8px; padding:6px 16px; cursor:pointer; font-size:13px;';
-        btn.onclick = function() {
-          if (confirm('아카이브 기록을 모두 삭제하시겠습니까?')) {
-            localStorage.removeItem('archiveList');
-            renderArchive();
-          }
-        };
-        document.getElementById('tab-archive').prepend(btn);
-      }
-      archive.forEach((item, idx) => {
-        const li = document.createElement('li');
-        li.className = 'archive-item';
-        const url = `search_result_page.html?query=${encodeURIComponent(item.query)}`;
-        li.innerHTML = `<a href="${url}" style="text-decoration:none; color:inherit; display:flex; justify-content:space-between; align-items:center; width:100%"><span class="item-query">${item.query}</span><span class="item-date">${item.date}</span></a>`;
-        // 삭제 버튼
-        const delBtn = document.createElement('button');
-        delBtn.textContent = '✕';
-        delBtn.title = '삭제';
-        delBtn.style = 'margin-left:12px; background:none; border:none; color:#d00; font-size:16px; cursor:pointer;';
-        delBtn.onclick = function(e) {
-          e.stopPropagation();
-          e.preventDefault();
-          if (confirm('이 기록을 삭제하시겠습니까?')) {
-            const newArchive = archive.filter((_, i) => i !== idx);
-            localStorage.setItem('archiveList', JSON.stringify(newArchive));
-            renderArchive();
-          }
-        };
-        li.appendChild(delBtn);
-        list.appendChild(li);
-      });
-    }
+    };
+
+    li.appendChild(delBtn);
+    list.appendChild(li);
+  });
+
+}
+
     function renderAll() { renderHistory(); renderArchive(); }
-    window.addEventListener('DOMContentLoaded', renderAll);
-    window.addEventListener('hashchange', renderAll);
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', renderAll);
-    });
+    // 초기 진입 시 한 번만 렌더링
+window.addEventListener('DOMContentLoaded', () => {
+  handleTabFromHash();   // 탭 상태 초기화
+  checkLogin();          // 로그인 확인
+  updateLoginUI();       // UI 반영
+  renderAll();           // 히스토리/아카이브 한 번만 렌더링
+});
+
+// 해시 변경 시 탭만 전환
+window.addEventListener('hashchange', handleTabFromHash);
+
+// 버튼 클릭 시 해시만 바꿈 (렌더링은 hashchange에서 하지 않음)
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const tab = this.getAttribute('data-tab');
+    window.location.hash = tab;
+  });
+});
+
   </script>
 </body>
 </html>
