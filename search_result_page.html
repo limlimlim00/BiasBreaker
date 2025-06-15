@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BiasBreaker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: sans-serif;
+    }
+
+    body {
+      background-color: white;
+      color: black;
+      padding: 40px;
+      overflow-y: scroll;
+    }
+
+    header {
+      position: fixed; 
+      top: 0; left: 0; right: 0;
+      background: white;
+      height: 80px;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+      position: static;
+      flex-direction: row;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      position: fixed;
+      top: 40px;
+      left: 40px;
+      font-weight: bold;
+      font-size: 40px;
+      z-index: 10;
+      cursor: pointer;
+      margin-bottom: 0;
+    }
+
+    .login-btn {
+      position: fixed;
+      top: 40px;
+      right: 40px;
+      background: black;
+      color: white;
+      font-weight: bold;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      z-index: 10;
+      margin-bottom: 0;
+    }
+
+    .search-bar {
+      display: flex;
+      justify-content: center;
+      max-width: 800px;
+      width: 100%;
+      flex: 1;
+      margin: 80px auto 24px; /* Adjusted for fixed header */
+    }
+
+    .search-bar input {
+      flex: 1;
+      width: 100%;
+      min-width: 400px; /* 원하는 고정값 */
+      padding: 10px 20px 10px 70px;
+      border-radius: 20px 0 0 20px;
+      border: 1px solid #ccc;
+      font-size: 17px;
+      text-align: center;
+    }
+
+    .search-bar input:focus {
+      outline: none;
+      border: 1px solid #ccc;
+      border-color: black; /* focus border color */
+    }
+
+    .search-btn {
+      padding: 10px 20px;
+      border-radius: 0 20px 20px 0;
+      border: 1px solid #ccc;
+      border-left: none;
+      cursor: pointer;
+      width: 56px;
+    }
+
+    main {
+      display: flex;
+      justify-content: center;
+      align-items: top;
+      margin-top: 32px;
+    }
+
+    .result-container {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      width: 800px;
+    }
+
+    .summary-row {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    .summary-box {
+      background: #f5f5f5;
+      border-radius: 20px;
+      padding: 24px;
+      flex: 1;
+      box-sizing: border-box;
+    }
+
+    .summary-box.common h3 {
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .summary-box.negative h3 {
+      color: #c0392b;
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .summary-box.positive h3 {
+      color: #158a5a;
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .summary-box ul {
+      list-style: disc;
+      padding-left: 20px;
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .summary-box ul li {
+      margin-bottom: 16px;           /* 불릿 간 간격 넓히기 */
+      line-height: 1.6;              /* 같은 항목 내 줄 간격 */
+      word-break: keep-all;          /* 단어는 최대한 유지해서 끊기 */
+      overflow-wrap: break-word;     /* 너무 길면 줄바꿈 허용 */
+    }
+    
+    .summary-box.negative { 
+      background: #ffeaea; 
+      width: 400px;
+      min-width: 200px;
+    }
+
+    .summary-box.positive {
+      background: #e7f9ee; 
+      width: 400px;
+      min-width: 200px;
+    }
+
+    .link-row {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    .link-row .link-box {
+      background: #f5f5f5;
+      border-radius: 20px;
+      padding: 24px;
+      flex: 1;
+      box-sizing: border-box;
+    }
+
+    .link-box {
+      background: #f5f5f5;
+      border-radius: 20px;
+      padding: 24px;
+      flex: 1;
+      box-sizing: border-box;
+    }
+
+    .link-box h4 {
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .link-box ol {
+      list-style: decimal;
+      padding-left: 20px;
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .link-box ol li {
+      margin-bottom: 16px;           /* 불릿 간 간격 넓히기 */
+      line-height: 1.6;              /* 같은 항목 내 줄 간격 */
+      word-break: keep-all;          /* 단어는 최대한 유지해서 끊기 */
+      overflow-wrap: break-word;     /* 너무 길면 줄바꿈 허용 */
+    }
+
+    .article-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .press-inline {
+      margin-left: 12px;           /* 띄어쓰기 느낌 */
+      font-size: 14px;
+      color: #888;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .press-inline img {
+      width: 14px;
+      height: 14px;
+      object-fit: contain;
+      vertical-align: middle;
+    }
+
+    .login-popup {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      display: none;
+    }
+
+    .login-popup-content {
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px 24px 24px 24px;
+      min-width: 280px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .social-login-img {
+      width: 220px;
+      height: auto;
+      cursor: pointer;
+      margin-bottom: 8px;
+      display: block;
+      border: none;
+      background: none;
+      padding: 0;
+    }
+
+    .user-info {
+      position: fixed;
+      top: 40px;
+      right: 40px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 10;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    .logout-btn {
+     background: black;
+     color: white;
+     border: none;
+     padding: 8px 16px;
+     border-radius: 20px;
+     cursor: pointer;
+    }
+
+    .close-popup {
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 15px;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+
+    .share-popup {
+      display:none;
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      bottom:0;
+      background:rgba(0,0,0,0.2);
+      z-index:10000;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .share-btn-fixed, .archive-btn-fixed {
+      width: 50px;
+      height: 50px;
+      padding: 0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 11000;
+      transition: background 0.2s;
+    }
+
+    .share-btn-fixed {
+      background: gray;
+      color: white;
+      font-weight: bold;
+      border: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    }
+
+    .share-btn-fixed:hover, .share-btn-fixed:focus {
+      background: black;
+    }
+
+    .archive-btn-fixed {
+      background: #888;
+      color: white;
+      font-weight: bold;
+      border: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    }
+
+    .archive-btn-fixed:hover, .archive-btn-fixed:focus {
+      background: #222;
+    }
+
+    /* 캡션 스타일 수정 */
+    .share-caption, .archive-caption {
+      display: none;
+      margin-right: 12px;
+      background: rgba(30,30,30,0.95);
+      color: white;
+      font-size: 14px;
+      padding: 6px 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      white-space: nowrap;
+      position: static;
+    }
+
+    /* 버튼 래퍼 스타일 수정 */
+    .share-btn-wrapper, .archive-btn-wrapper {
+      position: fixed;
+      right: 40px;
+      z-index: 12000;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .share-btn-wrapper {
+      bottom: 40px;
+    }
+
+    .archive-btn-wrapper {
+      bottom: 100px;
+    }
+
+    .user-dropdown {
+      display: none;
+      position: absolute;
+      top: 36px;
+      right: 0;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      min-width: 120px;
+      z-index: 100;
+    }
+
+    .dropdown-item {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 12px 20px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .dropdown-item:hover {
+      background: #f5f5f5;
+    }
+
+    .dropdown-item.logout-item {
+      color: #d00;
+    }
+
+    /* 태그 추천 공간 */
+    #suggestionArea {
+      display: none;
+      max-width: 600px;
+      margin: 16px auto 0 auto;
+      background: none;
+      color: #222;
+      border: none;
+      border-radius: 14px;
+      padding: 16px 28px;
+      text-align: center;
+      font-size: 16px;
+      box-shadow: none;
+    }
+
+    #suggestionArea ul {
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+
+    #suggestionArea button {
+      margin-top: 12px;
+      background: #ffe066;
+      color: #222;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 18px;
+      font-size: 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #suggestionArea button:hover {
+      background: #ffec99;
+    }
+  </style>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+  function decodeJWT(token) {
+    let base64Url = token.split(".")[1];
+    let base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    let jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map(function (c) {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join("")
+    );
+    return JSON.parse(jsonPayload);
+  }
+
+  async function updateArchiveBtnVisibility() {
+    const archiveBtnWrapper = document.querySelector('.archive-btn-wrapper');
+    if (!archiveBtnWrapper) return;
+
+    try {
+      const res = await fetch('/me.php', { credentials: 'include' });
+      if (!res.ok) throw new Error();
+      await res.json();
+      archiveBtnWrapper.style.display = 'flex';
+    } catch {
+      archiveBtnWrapper.style.display = 'none';
+    }
+  }
+
+  function handleCredentialResponse(response) {
+    const responsePayload = decodeJWT(response.credential);
+    console.log("✅ Google 로그인 성공");
+    console.log("👤 이름: " + responsePayload.name);
+    console.log("📧 이메일: " + responsePayload.email);
+    console.log("🖼️ 프로필 사진: " + responsePayload.picture);
+
+    fetch("/save_user.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        name: responsePayload.name,
+        email: responsePayload.email,
+        picture: responsePayload.picture
+      })
+    });
+
+    document.querySelector(".login-btn").style.display = "none";
+    document.querySelector(".user-info").style.display = "flex";
+    document.querySelector(".user-name").textContent = responsePayload.name;
+    document.querySelector(".login-popup").style.display = "none";
+
+    alert(`${responsePayload.name}님 환영합니다!`);
+    document.querySelector(".login-popup").style.display = "none";
+  }
+</script>
+</head>
+
+<body>
+  <div class="login-popup">
+    <div class="login-popup-content">
+      <h3>소셜 로그인</h3>
+      <div id="g_id_onload"
+      data-client_id="537494062461-3gmsohi2vihch382j2kg4qpfunnrpb0i.apps.googleusercontent.com"
+      data-callback="handleCredentialResponse"
+      data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin"
+      data-type="standard"
+      data-shape="rectangular"
+      data-theme="outline"
+      data-text="signin_with"
+      data-size="large"
+      data-logo_alignment="left">
+      </div>
+      <button class="close-popup">닫기</button>
+    </div>
+  </div>
+
+  <header>
+    <div class="header-row">
+      <div class="logo" onclick="window.location.href='index.html'" style="cursor:pointer;">BIASBREAKER</div>
+      <div class="header-actions">
+        <button class="login-btn">로그인</button>
+        <div class="user-info" style="display:none; align-items: center; gap: 8px;">
+          <span class="user-name" style="font-weight: bold; cursor:pointer;"></span>
+          <div class="user-dropdown">
+            <button class="dropdown-item history-item">히스토리</button>
+            <button class="dropdown-item archive-item">아카이브</button>
+            <button class="dropdown-item logout-item" style="color:#d00;">로그아웃</button>
+          </div>
+        </div>
+      </div>    
+    </div>    
+  </header>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="궁금한 이슈를 검색하세요" />
+    <button class="search-btn" id="searchBtn">🔍</button>
+  </div>
+
+  <div id="suggestionArea"></div>
+
+  <main>
+    <div class="result-container">
+      <div class="summary-box common">
+        <h3>📌 이슈 핵심 요약</h3>
+        <ul>
+        </ul>
+      </div>
+
+      <div class="summary-row">
+        <div class="summary-box positive">
+          <h3>✅ 왜 찬성하나요?</h3>
+          <ul>
+          </ul>
+        </div>
+        <div class="summary-box negative">
+          <h3>❌ 왜 반대하나요?</h3>
+          <ul>
+          </ul>
+        </div>
+      </div>
+
+      <div class="link-row">
+        <div class="link-box">
+          <h4>📰 더 읽어보기</h4>
+          <ol>
+          </ol>
+        </div>
+        <div class="link-box">
+          <h4>📰 더 읽어보기</h4>
+          <ol>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- 수정된 아카이브 버튼 -->
+    <div class="archive-btn-wrapper">
+      <span class="archive-caption">아카이브하기</span>
+      <button class="archive-btn-fixed" aria-label="아카이브하기">🗂️</button>
+    </div>
+
+    <!-- 수정된 공유 버튼 -->
+    <div class="share-btn-wrapper">
+      <span class="share-caption">공유하기</span>
+      <button class="share-btn-fixed" aria-label="공유하기">🔗</button>
+    </div>
+  </main>
+
+  <div class="archive-popup" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.2); z-index:10000; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:16px; padding:32px 24px; min-width:220px; box-shadow:0 8px 32px rgba(0,0,0,0.15); display:flex; flex-direction:column; align-items:center; gap:12px;">
+      <div style="font-size:32px; color:#158a5a;">📁</div>
+      <div style="font-size:16px; font-weight:bold;">아카이브 되었습니다!</div>
+    </div>
+  </div>
+
+  <div class="share-popup" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.2); z-index:10000; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:16px; padding:32px 24px; min-width:220px; box-shadow:0 8px 32px rgba(0,0,0,0.15); display:flex; flex-direction:column; align-items:center; gap:12px;">
+      <div style="font-size:32px; color:#158a5a;">✅</div>
+      <div style="font-size:16px; font-weight:bold;">URL이 복사되었습니다!</div>
+    </div>
+  </div>
+
+  <script>
+    // 검색창 포커스 시 placeholder 제거
+    const searchInput = document.querySelector('.search-bar input');
+    const originalPlaceholder = searchInput.placeholder;
+    searchInput.addEventListener('focus', function () {
+      this.placeholder = '';
+    });
+    searchInput.addEventListener('blur', function () {
+      if (!this.value) this.placeholder = originalPlaceholder;
+    });
+
+    // 로그인 팝업 열기/닫기
+    const loginBtn = document.querySelector('.login-btn');
+    const loginPopup = document.querySelector('.login-popup');
+    const closePopupBtn = document.querySelector('.close-popup');
+    loginBtn.addEventListener('click', () => {
+      loginPopup.style.display = 'flex';
+    });
+    closePopupBtn.addEventListener('click', () => {
+      loginPopup.style.display = 'none';
+    });
+    loginPopup.addEventListener('mousedown', (e) => {
+      if (e.target === loginPopup) loginPopup.style.display = 'none';
+    });
+    
+    // 사용자 드롭다운 메뉴 로직
+    const userNameSpan = document.querySelector('.user-name');
+    const userDropdown = document.querySelector('.user-dropdown');
+    
+    if (userNameSpan && userDropdown) {
+      let dropdownOpen = false;
+      
+      userNameSpan.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdownOpen = !dropdownOpen;
+        userDropdown.style.display = dropdownOpen ? 'block' : 'none';
+      });
+      
+      document.addEventListener('click', (e) => {
+        if (dropdownOpen && !userDropdown.contains(e.target) && e.target !== userNameSpan) {
+          userDropdown.style.display = 'none';
+          dropdownOpen = false;
+        }
+      });
+      // 드롭다운 메뉴 항목 클릭 이벤트 - 요소 존재 확인 후 처리
+      const historyItem = userDropdown.querySelector('.history-item');
+      const archiveItem = userDropdown.querySelector('.archive-item');
+      const logoutItem = userDropdown.querySelector('.logout-item');
+      
+      if (historyItem) {
+        historyItem.addEventListener('click', () => {
+          window.location.href = 'history.html#history';
+        });
+      }
+      
+      if (archiveItem) {
+        archiveItem.addEventListener('click', () => {
+          window.location.href = 'history.html#archive';
+        });
+      }
+      
+      if (logoutItem) {
+        logoutItem.addEventListener('click', async () => {
+            try {
+                await fetch('/logout.php', { credentials: 'include' });
+                } catch (err) {
+                console.warn("서버 로그아웃 실패", err);
+                }
+
+        document.querySelector('.login-btn').style.display = 'inline-block';
+        document.querySelector('.user-info').style.display = 'none';
+        document.querySelector('.user-name').textContent = '';
+        userDropdown.style.display = 'none';
+        dropdownOpen = false;
+        updateArchiveBtnVisibility();
+        alert("로그아웃 되었습니다.");
+        });
+      }
+    }
+    
+    // 공유 버튼 기능
+    const shareBtnFixed = document.querySelector('.share-btn-fixed');
+    const sharePopup = document.querySelector('.share-popup');
+    if (shareBtnFixed) {
+      shareBtnFixed.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          sharePopup.style.display = 'flex';
+          setTimeout(() => {
+            sharePopup.style.display = 'none';
+          }, 1500);
+        } catch (e) {
+          alert('URL 복사에 실패했습니다.');
+        }
+      });
+    }
+
+    // 아카이브 기능
+    const archiveBtnFixed = document.querySelector('.archive-btn-fixed');
+    const archivePopup = document.querySelector('.archive-popup');
+
+    if (archiveBtnFixed && archivePopup) {
+      archiveBtnFixed.addEventListener('click', async () => {
+        // 서버에서 사용자 정보 확인
+        let user;
+        try {
+          const res = await fetch("/me.php", { credentials: "include" });
+          if (!res.ok) throw new Error("Not logged in");
+          user = await res.json();
+        } catch (err) {
+          console.error("로그인 정보 확인 실패", err);
+          return;
+        }
+
+        // 쿼리 파라미터 추출
+        const params = new URLSearchParams(window.location.search);
+        const query = params.get('query');
+        if (!query) return;
+
+        const htmlContent = document.documentElement.outerHTML;
+
+        try {
+          // 서버로 아카이브 저장 요청
+          const response = await fetch("/save_archive.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              query: query,
+              html: htmlContent
+            })
+          });
+
+          if (!response.ok) throw new Error("PDF 저장 실패");
+
+          // 완료 알림
+          archivePopup.style.display = 'flex';
+          setTimeout(() => {
+            archivePopup.style.display = 'none';
+          }, 1500);
+        } catch (err) {
+          console.error("아카이브 저장 실패", err);
+        }
+      });
+    }   
+
+    // 캡션 표시 기능 - 수정된 부분
+    const shareBtn = document.querySelector('.share-btn-fixed');
+    const shareCaption = document.querySelector('.share-caption');
+    
+    if (shareBtn && shareCaption) {
+      shareBtn.addEventListener('mouseenter', () => {
+        shareCaption.style.display = 'block';
+      });
+      shareBtn.addEventListener('mouseleave', () => {
+        shareCaption.style.display = 'none';
+      });
+      shareBtn.addEventListener('focus', () => {
+        shareCaption.style.display = 'block';
+      });
+      shareBtn.addEventListener('blur', () => {
+        shareCaption.style.display = 'none';
+      });
+    }
+
+    const archiveBtn = document.querySelector('.archive-btn-fixed');
+    const archiveCaption = document.querySelector('.archive-caption');
+    
+    if (archiveBtn && archiveCaption) {
+      archiveBtn.addEventListener('mouseenter', () => {
+        archiveCaption.style.display = 'block';
+      });
+      archiveBtn.addEventListener('mouseleave', () => {
+        archiveCaption.style.display = 'none';
+      });
+      archiveBtn.addEventListener('focus', () => {
+        archiveCaption.style.display = 'block';
+      });
+      archiveBtn.addEventListener('blur', () => {
+        archiveCaption.style.display = 'none';
+      });
+    }
+
+  </script>
+
+
+  <!-- DOM -->
+  <script>
+    const apiBase = "https://2cb5ab3068290.notebooks.jarvislabs.net/proxy/8888"; // 실제 API 프록시 포트에 맞게
+
+    // ✅ 언론사 로고 매핑 테이블
+    const PRESS_LOGO_MAP = {
+      "경향신문": "kyunghyang",
+      "동아일보": "donga",
+      "연합뉴스": "yonhap",
+      "중앙일보": "joongang",
+      "한겨레": "hankyoreh",
+      "한국일보": "hankook",
+      "KBS": "kbs",
+      "MBC": "mbc",
+      "SBS": "sbs",
+      "YTN": "ytn"
+    };
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      // 검색어 유지
+      const params = new URLSearchParams(window.location.search);
+      const query = params.get("query");
+      if (query) {
+        document.getElementById("searchInput").value = query;
+      }
+      
+      // 1. 로그인 정보 확인 ----------------------------------------
+      try {
+        const res = await fetch("/me.php", { credentials: "include" });
+        if (!res.ok) throw new Error();
+        const user = await res.json();
+        
+        document.querySelector(".user-name").textContent = user.name;
+        document.querySelector(".login-btn").style.display = "none";
+        document.querySelector(".user-info").style.display = "flex";
+      } catch {
+        document.querySelector(".login-btn").style.display = "inline-block";
+        document.querySelector(".user-info").style.display = "none";
+        document.querySelector(".user-name").textContent = '';
+      }
+      updateArchiveBtnVisibility();
+
+      // 2. 데이터 렌더링 ----------------------------------------
+      try {
+        // 1. localStorage에서 데이터 가져오기
+        const data = JSON.parse(localStorage.getItem("biasbreaker_result"));
+        // alert("가져옴!\n\n" + JSON.stringify(data, null, 2));
+        if (!data) {
+          alert("저장된 검색 결과가 없습니다.");
+          return;
+        }
+    
+        // 2. HTML 요소 업데이트 함수들
+        const updateList = (selector, list) => {
+          const ul = document.querySelector(selector);
+          if (!ul) return;
+          ul.innerHTML = list.map(item => `<li>${item}</li>`).join('');
+        };
+    
+        // 필요에 따라 사용: 간단 버전
+        const updateLinkList = (selector, articles) => {
+          const ul = document.querySelector(selector);
+          if (!ul || !Array.isArray(articles)) return;
+          ul.innerHTML = articles
+            .map(item => `<li><a href="${item.url}" target="_blank" rel="noopener noreferrer">${item.title}</a></li>`)
+            .join('');
+        };
+    
+        // 1. 찬성/반대 각각 별도 번호 부여
+        const positive_articles = (data.top_support_items || []).map((item, idx) => ({
+          ...item,
+          num: idx + 1
+        }));
+        const negative_articles = (data.top_oppose_items || []).map((item, idx) => ({
+          ...item,
+          num: idx + 1
+        }));
+    
+        // 2. id → num 매핑도 각 칼럼별로 따로
+        const posIdToNum = {};
+        positive_articles.forEach((item, idx) => { posIdToNum[item.id] = idx + 1; });
+        const negIdToNum = {};
+        negative_articles.forEach((item, idx) => { negIdToNum[item.id] = idx + 1; });
+    
+        // 3. summary (칼럼별 번호 사용)
+        const positive_summary = positive_articles.map(i => `${i.sentence} [${i.num}]`);
+        const negative_summary = negative_articles.map(i => `${i.sentence} [${i.num}]`);
+    
+        // 4. common ground도 칼럼별 번호 기준으로 citation
+        const common_ground = (data.common_facts || []).map(fact =>
+          `${fact.fact} [${posIdToNum[fact.support_id]}, ${negIdToNum[fact.oppose_id]}]`
+        );
+    
+        // 커스텀 뉴스 링크 렌더링 (번호/언론사/제목/링크)
+        function customUpdateLinkList(selector, articles) {
+          const ul = document.querySelector(selector);
+          if (!ul) return;
+          ul.innerHTML = "";
+          articles.forEach(a => {
+            const li = document.createElement("li");
+            
+            const logoKey = PRESS_LOGO_MAP[a.press];
+            const pressLogoUrl = logoKey ? `/logos/${logoKey}.png` : null;
+            
+            const pressName = a.press;
+
+            li.innerHTML = `
+              <div class="article-item">
+                <a href="${a.url}" target="_blank" rel="noopener noreferrer">
+                  ${a.title}
+                  <span class="press-inline">
+                    <img src="${pressLogoUrl}" alt="${pressName} 로고" />
+                    ${pressName}
+                  </span>
+                </a>
+              </div>
+            `;
+            ul.appendChild(li);
+          });
+        }
+    
+        // 5. 최종 구조로 렌더링
+        updateList(".summary-box.common ul", common_ground);
+        updateList(".summary-box.positive ul", positive_summary);
+        updateList(".summary-box.negative ul", negative_summary);
+        customUpdateLinkList(".link-row .link-box:first-of-type ol", negative_articles);
+        customUpdateLinkList(".link-row .link-box:last-of-type ol", positive_articles);
+    
+      } catch (e) {
+        console.error("데이터 렌더링 오류:", e);
+        alert("⚠️ 데이터를 불러오는 데 실패했습니다.");
+      }
+    
+      // 2. 검색 기능 ---------------------------------------------
+      const searchBtn = document.getElementById("searchBtn");
+      const searchInput = document.getElementById("searchInput");
+      const suggestionArea = document.getElementById("suggestionArea");
+    
+      async function handleSearch() {
+        
+
+        const query = searchInput.value.trim();
+        if (!query) {
+          alert("검색어를 입력하세요.");
+          return;
+        }
+        try {
+          await fetch("/save_search.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ query })
+        });      
+
+          const res = await fetch(`${apiBase}/summarize`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tag: query })
+          });
+          const data = await res.json();
+          if (!data.not_found) {
+            localStorage.setItem("biasbreaker_result", JSON.stringify(data));
+            // alert("저장됨!\n\n" + JSON.stringify(data, null, 2));
+            // window.open(`search_result_page.html?query=${encodeURIComponent(query)}`, '_blank'); // 다른 환경에서는 수정
+            window.location.href = `search_result_page.html?query=${encodeURIComponent(query)}`;
+            return;
+          }
+          // 결과 없을 때 유사 태그 제안
+          suggestionArea.innerHTML = `
+            <div class="suggestion-card">
+              <div class="suggestion-title">
+                <span class="icon">❗</span>
+                <span><b>'${query}'</b> 태그에 대한 정보가 없습니다.</span>
+              </div>
+              ${
+                data.suggestions.length > 0
+                  ? `<div class="suggestion-subtitle"><span class="icon">🔍</span>유사 태그</div>
+                    <div class="suggested-tags">
+                      ${data.suggestions.map(tag =>
+                        `<button class="suggested-tag-btn">${tag}</button>`
+                      ).join('')}
+                    </div>`
+                  : `<div class="no-suggestion">추천할 유사 태그가 없습니다.</div>`
+              }
+              <button id="createTagBtn" class="create-tag-btn"><span class="plus-icon">＋</span> 태그 만들기</button>
+            </div>
+            <style>
+              .suggestion-card {
+                max-width: 380px;   /* 기존 295px -> 380px */
+                background: #fffde6;
+                border-radius: 18px;
+                padding: 36px 26px 26px 26px;   /* padding 넉넉하게 */
+                box-shadow: 0 4px 24px rgba(255,224,102,0.16);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 18px;  /* 요소 간 간격 더 넓게 */
+                margin: 0 auto;
+                animation: fadeIn .7s cubic-bezier(.5,1.7,.5,1);
+              }
+
+              .suggestion-title {
+                font-size: 22px;   /* 기존 19px → 14.3px */
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                color: #343434;
+                margin-bottom: 6px;
+                letter-spacing: -0.3px;
+              }
+              .suggestion-title .icon { color: #e83512; font-size: 22px; }  /* 24→17 */
+              .suggestion-subtitle {
+                font-size: 22px;     /* 15.5→12.4 */
+                font-weight: 700;
+                color: #343434;
+                margin-bottom: 0px;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+              }
+              .suggestion-subtitle .icon { font-size: 22px; }  /* 18→13 */
+              .suggested-tags {
+                display: flex;
+                flex-direction: column;
+                gap: 7px;     /* 12→7 */
+                width: 100%;
+                margin-bottom: 0px;
+              }
+              .suggested-tag-btn {
+                background: #fffbe7;
+                border: 1.2px dashed #ffd600;
+                border-radius: 8px;
+                color: #333;
+                font-size: 22px;    /* 16.2→12.5 */
+                padding: 6px 0;
+                width: 100%;
+                cursor: pointer;
+                transition: background 0.14s, border 0.14s, color 0.12s;
+                font-weight: 500;
+                letter-spacing: -0.1px;
+              }
+              .suggested-tag-btn:hover {
+                background: #ffec99;
+                border: 1.5px solid #ffd600;
+                color: #cd7e0b;
+              }
+              .create-tag-btn {
+                margin-top: 12px;
+                background: #caff70 !important;     /* 연두색 */
+                color: #224a14 !important;          /* 진한 녹색 글씨 */
+                border: none;
+                border-radius: 20px;
+                font-size: 22px;
+                font-weight: 700;
+                padding: 18px 0;
+                width: 100%;
+                min-width: 100px;
+                box-shadow: 0 8px 32px rgba(180, 255, 120, 0.09);
+                cursor: pointer;
+                transition: background 0.13s, color 0.14s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                letter-spacing: -1px;
+              }
+
+              .create-tag-btn .plus-icon {
+                font-size: 22px;
+                color: #222 !important;    /* 선명한 초록 */
+                font-weight: bold;
+              }
+
+              .create-tag-btn:hover,
+              .create-tag-btn:focus {
+                background: #eaffb5;
+                color: #406c12;
+              }
+
+              .no-suggestion {
+                color: #999;
+                font-size: 22px;   /* 15→12 */
+                margin-bottom: 5px;
+              }
+              @keyframes fadeIn {
+                0% { opacity: 0; transform: translateY(10px);}
+                100% { opacity: 1; transform: none;}
+              }
+            </style>
+          `;
+          suggestionArea.style.display = "block";
+
+          setTimeout(() => {
+            document.querySelectorAll('.suggested-tag-btn').forEach(btn => {
+              btn.addEventListener('click', async function() {
+                const tag = this.textContent.trim();
+                searchInput.value = tag;  // 검색창에도 입력
+                handleSearch();           // 그냥 handleSearch()만 호출 (query 없이)
+              });
+            });
+          }, 0);
+
+          document.getElementById("createTagBtn").addEventListener("click", async () => {
+            const originalQuery = query; // query 고정
+            const btn = document.getElementById("createTagBtn");
+            btn.disabled = true; // 중복 클릭 방지
+            // btn.textContent = "⏳ 생성 중...";
+
+            try {
+              // 1. 태그 생성 요청
+              const res = await fetch(`${apiBase}/create_tag_request`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tag: query })
+              });
+
+              const { task_id } = await res.json();
+              suggestionArea.innerHTML = `
+                <div class="suggestion-card">
+                  <div class="suggestion-title">
+                    <span class="icon spinner">⏳</span>
+                    <span><b>태그를 생성 중입니다...</b></span>
+                  </div>
+                  <p class="loading-info">이 작업은 최대 <b>3분</b> 정도 소요될 수 있어요.<br>잠시만 기다려 주세요.</p>
+                </div>
+                <style>
+                  .suggestion-card {
+                    max-width: 380px;
+                    background: #fffde6;
+                    border-radius: 18px;
+                    padding: 36px 26px 26px 26px;
+                    box-shadow: 0 4px 24px rgba(255,224,102,0.16);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 18px;
+                    margin: 0 auto;
+                    animation: fadeIn .7s cubic-bezier(.5,1.7,.5,1);
+                  }
+
+                  .suggestion-title {
+                    font-size: 22px;
+                    font-weight: 700;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    color: #343434;
+                    letter-spacing: -0.3px;
+                  }
+
+                  .spinner {
+                    animation: spin 1.1s linear infinite;
+                    display: inline-block;
+                  }
+
+                  @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                  }
+
+                  .loading-info {
+                    text-align: center;
+                    font-size: 16px;
+                    color: #666;
+                    line-height: 1.6;
+                  }
+
+                  @keyframes fadeIn {
+                    0% { opacity: 0; transform: translateY(10px);}
+                    100% { opacity: 1; transform: none;}
+                  }
+                </style>
+              `;
+
+              // 2. 주기적으로 상태 확인 (폴링)
+              const interval = setInterval(async () => {
+                try {
+                  const statusRes = await fetch(`${apiBase}/create_tag_status?task_id=${task_id}`);
+                  const data = await statusRes.json();
+
+                  if (data.status === "done") {
+                    clearInterval(interval);
+                    alert(data.message || `'${query}' 태그가 생성되었습니다!`);
+
+                    // ✅ 요약 데이터를 다시 요청
+                    try {
+                      const summaryRes = await fetch(`${apiBase}/summarize`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ tag: query })
+                      });
+                      const summaryData = await summaryRes.json();
+                      if (!summaryData.not_found) {
+                        localStorage.setItem("biasbreaker_result", JSON.stringify(summaryData));
+                      }
+                    } catch (e) {
+                      console.warn("요약 데이터 요청 실패", e);
+                    }
+
+                    // ✅ 이동
+                    window.location.href = `search_result_page.html?query=${encodeURIComponent(query)}`;
+                  } else if (data.status === "error") {
+                    clearInterval(interval);
+                    alert(`태그 생성 실패: ${data.error}`);
+                  }
+                } catch (err) {
+                  clearInterval(interval);
+                  alert("태그 생성 상태를 확인하는 중 오류가 발생했습니다.");
+                  console.error("Polling Error:", err);
+                }
+              }, 10000); // 10초마다 확인
+            } catch (error) {
+              alert("태그 생성 중 오류가 발생했습니다.");
+              console.error("Error:", error);
+            }
+          });
+        } catch (error) {
+          alert("서버와 연결할 수 없습니다.");
+          console.error("Error:", error);
+        }
+      }
+    
+      searchBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        handleSearch();
+      });
+      searchInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          handleSearch();
+        }
+      });
+      // ---------------------------- END
+    });   
+    </script>
+</body>
+</html>

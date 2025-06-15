@@ -4,10 +4,10 @@ header('Content-Type: application/json');
 
 require_once 'db.php';
 
-// ·Î±×ÀÎ ¿©ºÎ È®ÀÎ
+// ï¿½Î±ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
 if (!isset($_SESSION['user']) || !isset($_SESSION['user']['email'])) {
     http_response_code(401);
-    echo json_encode(['error' => '·Î±×ÀÎ ÇÊ¿ä']);
+    echo json_encode(['error' => 'ë¡œê·¸ì¸ í•„ìš”']);
     exit;
 }
 
@@ -21,5 +21,5 @@ try {
     echo json_encode($history);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['error' => '±â·Ï Á¶È¸ ½ÇÆĞ', 'message' => $e->getMessage()]);
+    echo json_encode(['error' => 'ê¸°ë¡ ì¡°íšŒ ì˜¤ë¥˜', 'message' => $e->getMessage()]);
 }

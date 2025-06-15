@@ -6,7 +6,7 @@ $data = json_decode(file_get_contents("php://input"), true);
 
 if (!isset($data['email'])) {
     http_response_code(400);
-    echo json_encode(['error' => 'ÇÊ¼ö µ¥ÀÌÅÍ ´©¶ô']);
+    echo json_encode(['error' => 'í•„ìˆ˜ ê°’ ëˆ„ë½']);
     exit;
 }
 
@@ -36,5 +36,5 @@ try {
     echo json_encode(['ok' => true]);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'DB ÀúÀå ½ÇÆĞ', 'details' => $e->getMessage()]);
+    echo json_encode(['error' => 'DB ì—°ê²° ì˜¤ë¥˜', 'details' => $e->getMessage()]);
 }

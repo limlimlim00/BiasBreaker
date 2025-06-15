@@ -6,20 +6,20 @@ session_start();
 header('Content-Type: application/json');
 require_once __DIR__ . '/db.php';
 
-// ·Î±×ÀÎ È®ÀÎ
+// ï¿½Î±ï¿½ï¿½ï¿½ È®ï¿½ï¿½
 if (!isset($_SESSION['user']) || !isset($_SESSION['user']['email'])) {
     http_response_code(403);
-    echo json_encode(["error" => "·Î±×ÀÎÀÌ ÇÊ¿äÇÕ´Ï´Ù."]);
+    echo json_encode(["error" => "ë¡œê·¸ì¸ì´ í•„ìš”í•©ë‹ˆë‹¤."]);
     exit;
 }
 
 $rawData = file_get_contents("php://input");
 $data = json_decode($rawData, true);
 
-// query ÇÊ¼ö Ã¼Å©
+// query ï¿½Ê¼ï¿½ Ã¼Å©
 if (!isset($data['query']) || trim($data['query']) === '') {
     http_response_code(400);
-    echo json_encode(["error" => "°Ë»ö¾î°¡ Á¦°øµÇÁö ¾Ê¾Ò½À´Ï´Ù."]);
+    echo json_encode(["error" => "ê²€ìƒ‰ì–´ê°€ ì…ë ¥ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤."]);
     exit;
 }
 
@@ -36,7 +36,7 @@ try {
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode([
-        "error" => "°Ë»ö ±â·Ï ÀúÀå Áß ¿À·ù ¹ß»ı",
+        "error" => "ê²€ìƒ‰ ê¸°ë¡ ì €ì¥ ì¤‘ ì˜¤ë¥˜ ë°œìƒ",
         "message" => $e->getMessage()
     ]);
 }

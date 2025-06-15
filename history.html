@@ -445,7 +445,7 @@
         const contentWrapper = document.createElement('div');
         contentWrapper.style = 'display: flex; flex-direction: column; flex: 1; cursor: pointer;';
         contentWrapper.onclick = () => {
-          window.open(`/searchresult.html?query=${encodeURIComponent(item.query)}`, '_blank');
+          window.open(`search_result_page.html?query=${encodeURIComponent(item.query)}`, '_blank');
         };
 
         const row = document.createElement('div');
