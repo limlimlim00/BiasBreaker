@@ -340,11 +340,21 @@
           dropdownOpen = false;
         }
       });
-      const historyItem = userDropdown.querySelector('.history-item');
-      const archiveItem = userDropdown.querySelector('.archive-item');
+      // 드롭다운 메뉴 항목 클릭 시 탭 이동
+      const dropdownBtns = userDropdown.querySelectorAll('.dropdown-item');
+      if (dropdownBtns.length >= 2) {
+        dropdownBtns[0].addEventListener('click', () => {
+          window.location.hash = 'history';
+          userDropdown.style.display = 'none';
+          dropdownOpen = false;
+        });
+        dropdownBtns[1].addEventListener('click', () => {
+          window.location.hash = 'archive';
+          userDropdown.style.display = 'none';
+          dropdownOpen = false;
+        });
+      }
       const logoutItem = userDropdown.querySelector('.logout-item');
-      if (historyItem) historyItem.addEventListener('click', () => { window.location.href = 'history.html#history'; });
-      if (archiveItem) archiveItem.addEventListener('click', () => { window.location.href = 'history.html#archive'; });
       if (logoutItem) {
         logoutItem.addEventListener('click', async () => {
           try {
