@@ -102,7 +102,7 @@ def crawl_query_list(base_query):
     all_news = []
     seen_urls = set()
     for query in query_list:
-        news_items = crawl_naver_news_titles_and_links(query, max_results=2)
+        news_items = crawl_naver_news_titles_and_links(query, max_results=1)
         for item in news_items:
             if item['url'] not in seen_urls:
                 all_news.append(item)
