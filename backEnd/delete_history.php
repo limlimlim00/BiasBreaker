@@ -6,7 +6,7 @@ require_once __DIR__ . '/db.php';
 
 if (!isset($_SESSION['user'])) {
     http_response_code(401);
-    echo json_encode(['error' => '·Î±×ÀÎÀÌ ÇÊ¿äÇÕ´Ï´Ù.']);
+    echo json_encode(['error' => 'ë¡œê·¸ì¸ì´ í•„ìš”í•©ë‹ˆë‹¤.']);
     exit;
 }
 
@@ -15,25 +15,25 @@ $raw = file_get_contents("php://input");
 $data = json_decode($raw, true);
 
 try {
-    // ? °³º° »èÁ¦ (id Á¦°øµÊ)
+    
     if (isset($data['id'])) {
         $stmt = $pdo->prepare("DELETE FROM search_history WHERE id = :id AND email = :email");
         $stmt->execute([':id' => $data['id'], ':email' => $email]);
     }
-    // ? ÀüÃ¼ »èÁ¦ (¸í½ÃÀûÀ¸·Î delete_all = true Àü´ÞµÊ)
+    
     else if (isset($data['delete_all']) && $data['delete_all'] === true) {
         $stmt = $pdo->prepare("DELETE FROM search_history WHERE email = :email");
         $stmt->execute([':email' => $email]);
     }
-    // ?? ±× ¿Ü Àß¸øµÈ ¿äÃ»
+    
     else {
         http_response_code(400);
-        echo json_encode(['error' => '»èÁ¦ÇÒ id ¶Ç´Â delete_all ÇÃ·¡±× ÇÊ¿ä']);
+        echo json_encode(['error' => 'í•„ìˆ˜ê°’ id ë˜ëŠ” delete_all í•„ë“œ í•„ìš”']);
         exit;
     }
 
     echo json_encode(['ok' => true]);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'DB Ã³¸® ¿À·ù']);
+    echo json_encode(['error' => 'DB Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½']);
 }

@@ -3,7 +3,7 @@ session_start();
 header('Content-Type: application/json');
 require_once 'db.php';
 
-// �α��� Ȯ��
+
 if (!isset($_SESSION['user'])) {
     http_response_code(401);
     echo json_encode(['error' => '로그인 필요']);

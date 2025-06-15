@@ -6,7 +6,7 @@ session_start();
 header('Content-Type: application/json');
 require_once __DIR__ . '/db.php';
 
-// �α��� Ȯ��
+
 if (!isset($_SESSION['user']) || !isset($_SESSION['user']['email'])) {
     http_response_code(403);
     echo json_encode(["error" => "로그인이 필요합니다."]);
@@ -16,7 +16,7 @@ if (!isset($_SESSION['user']) || !isset($_SESSION['user']['email'])) {
 $rawData = file_get_contents("php://input");
 $data = json_decode($rawData, true);
 
-// query �ʼ� üũ
+
 if (!isset($data['query']) || trim($data['query']) === '') {
     http_response_code(400);
     echo json_encode(["error" => "검색어가 입력되지 않았습니다."]);
