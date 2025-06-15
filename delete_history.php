@@ -1,23 +1,39 @@
 <?php
 session_start();
 header('Content-Type: application/json');
-require_once 'db.php';
 
-// 로그인 확인
+require_once __DIR__ . '/db.php';
+
 if (!isset($_SESSION['user'])) {
     http_response_code(401);
-    echo json_encode(['error' => '로그인 필요']);
+    echo json_encode(['error' => '로그인이 필요합니다.']);
     exit;
 }
 
 $email = $_SESSION['user']['email'];
+$raw = file_get_contents("php://input");
+$data = json_decode($raw, true);
 
 try {
-    $stmt = $pdo->prepare("DELETE FROM search_history WHERE email = :email");
-    $stmt->execute([':email' => $email]);
+    // ? 개별 삭제 (id 제공됨)
+    if (isset($data['id'])) {
+        $stmt = $pdo->prepare("DELETE FROM search_history WHERE id = :id AND email = :email");
+        $stmt->execute([':id' => $data['id'], ':email' => $email]);
+    }
+    // ? 전체 삭제 (명시적으로 delete_all = true 전달됨)
+    else if (isset($data['delete_all']) && $data['delete_all'] === true) {
+        $stmt = $pdo->prepare("DELETE FROM search_history WHERE email = :email");
+        $stmt->execute([':email' => $email]);
+    }
+    // ?? 그 외 잘못된 요청
+    else {
+        http_response_code(400);
+        echo json_encode(['error' => '삭제할 id 또는 delete_all 플래그 필요']);
+        exit;
+    }
 
-    echo json_encode(['ok' => true, 'message' => '검색 기록이 삭제되었습니다.']);
+    echo json_encode(['ok' => true]);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['error' => '기록 삭제 실패']);
+    echo json_encode(['error' => 'DB 처리 오류']);
 }

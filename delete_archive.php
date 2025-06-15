@@ -6,7 +6,7 @@ require_once __DIR__ . '/db.php';
 
 if (!isset($_SESSION['user'])) {
     http_response_code(401);
-    echo json_encode(['error' => '·Î±×ÀÎÀÌ ÇÊ¿äÇÕ´Ï´Ù.']);
+    echo json_encode(['error' => 'ë¡œê·¸ì¸ì´ í•„ìš”í•©ë‹ˆë‹¤.']);
     exit;
 }
 
@@ -15,20 +15,22 @@ $raw = file_get_contents("php://input");
 $data = json_decode($raw, true);
 
 try {
+    // â˜… idê°€ ìžˆì„ ë•Œë§Œ ê°œë³„ ì‚­ì œ
     if (isset($data['id'])) {
-        // Æ¯Á¤ ¾ÆÄ«ÀÌºê ÇÏ³ª »èÁ¦
+        // (ê¸°ì¡´ ì½”ë“œ ë™ì¼)
         $stmt = $pdo->prepare("SELECT pdf_path FROM archive_list WHERE id = :id AND email = :email");
         $stmt->execute([':id' => $data['id'], ':email' => $email]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($row && file_exists($row['pdf_path'])) {
-            unlink($row['pdf_path']); // ÆÄÀÏ »èÁ¦
+            unlink($row['pdf_path']);
         }
 
         $stmt = $pdo->prepare("DELETE FROM archive_list WHERE id = :id AND email = :email");
         $stmt->execute([':id' => $data['id'], ':email' => $email]);
-    } else {
-        // ÀüÃ¼ »èÁ¦: ¸ðµç PDF °æ·Î °¡Á®¿Í »èÁ¦
+    }
+    // â˜… id ì—†ëŠ” ì „ì²´ ì‚­ì œëŠ” "ëª…ì‹œì " ì¿¼ë¦¬ìŠ¤íŠ¸ë§ or í™•ì¸ê°’ ë“±ìœ¼ë¡œ êµ¬ë¶„ (ê¶Œìž¥)
+    else if (isset($data['delete_all']) && $data['delete_all'] === true) {
         $stmt = $pdo->prepare("SELECT pdf_path FROM archive_list WHERE email = :email");
         $stmt->execute([':email' => $email]);
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -40,9 +42,16 @@ try {
         $stmt = $pdo->prepare("DELETE FROM archive_list WHERE email = :email");
         $stmt->execute([':email' => $email]);
     }
+    else {
+        // ìž˜ëª»ëœ ìš”ì²­
+        http_response_code(400);
+        echo json_encode(['error' => 'ì‚­ì œí•  id ë˜ëŠ” delete_all í”Œëž˜ê·¸ í•„ìš”']);
+        exit;
+    }
 
     echo json_encode(['ok' => true]);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'DB »èÁ¦ ½ÇÆÐ']);
+    echo json_encode(['error' => 'DB ì²˜ë¦¬ ì˜¤ë¥˜']);
 }
+

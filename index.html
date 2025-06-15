@@ -16,6 +16,7 @@
       background-color: white;
       color: black;
       padding: 40px;
+      overflow-y: scroll;
     }
 
     header {
@@ -37,21 +38,21 @@
       flex-direction: row;
     }
 
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
     .logo {
       position: fixed;
       top: 40px;
       left: 40px;
       font-weight: bold;
-      font-size: 30px;
+      font-size: 40px;
       z-index: 10;
       cursor: pointer;
       margin-bottom: 0;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 16px;
     }
 
     .login-btn {
@@ -75,19 +76,24 @@
       max-width: 800px;
       width: 100%;
       flex: 1;
-      margin: 64px auto 24px; /* Adjusted for fixed header */
+      margin: 80px auto 24px;
     }
-    .search-bar input:focus {
-      outline: none;
-      border-color: black; /* focus border color */
-    }
+
     .search-bar input {
       flex: 1;
-      padding: 10px 20px;
+      width: 100%;
+      min-width: 400px;
+      padding: 10px 20px 10px 70px;
       border-radius: 20px 0 0 20px;
       border: 1px solid #ccc;
-      font-size: 14px;
+      font-size: 17px;
       text-align: center;
+    }
+
+    .search-bar input:focus {
+      outline: none;
+      border: 1px solid #ccc;
+      border-color: black;
     }
 
     .search-btn {
@@ -96,13 +102,14 @@
       border: 1px solid #ccc;
       border-left: none;
       cursor: pointer;
+      width: 56px;
     }
 
     main {
       display: flex;
       justify-content: center;
       align-items: top;
-      margin-top: 32px
+      margin-top: 32px;
     }
 
     .issue-container {
@@ -122,13 +129,14 @@
       gap: 12px;
       justify-content: center;
       margin-bottom: 24px;
+      font-weight: 700;
       width: 100%;
     }
 
     .tab-btn {
       background: none;
       border: none;
-      font-size: 16px;
+      font-size: 26px;
       color: #aaa;
       padding: 8px 20px;
       border-radius: 20px 20px 0 0;
@@ -156,11 +164,13 @@
     .issue-column {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 30px;
       align-items: center;
     }
 
     .issue-column button {
+      font-size: 20px;
+      font-weight: 600;
       width: 200px;
       background: white;
       border: none;
@@ -223,7 +233,7 @@
       gap: 12px;
       z-index: 10;
       font-weight: bold;
-      font-size: 14px;
+      font-size: 20px;
     }
 
     .logout-btn {
@@ -266,58 +276,96 @@
       cursor: pointer;
       font-size: 14px;
     }
+
     .dropdown-item:hover {
       background: #f5f5f5;
     }
+
     .dropdown-item.logout-item {
       color: #d00;
+    }
+
+    /* 태그 추천 공간 */
+    #suggestionArea {
+      display: none;
+      max-width: 600px;
+      margin: 16px auto 0 auto;
+      background: none;
+      color: #222;
+      border: none;
+      border-radius: 14px;
+      padding: 16px 28px;
+      text-align: center;
+      font-size: 16px;
+      box-shadow: none;
+    }
+
+    #suggestionArea ul {
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+
+    #suggestionArea button {
+      margin-top: 12px;
+      background: #ffe066;
+      color: #222;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 18px;
+      font-size: 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #suggestionArea button:hover {
+      background: #ffec99;
     }
   </style>
 
   <!-- Google Identity Services -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script>
-  function decodeJWT(token) {
-    let base64Url = token.split(".")[1];
-    let base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    let jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map(function (c) {
-          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+    function decodeJWT(token) {
+      let base64Url = token.split(".")[1];
+      let base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      let jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map(function (c) {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join("")
+      );
+      return JSON.parse(jsonPayload);
+    }
+
+    function handleCredentialResponse(response) {
+      const responsePayload = decodeJWT(response.credential);
+      console.log("✅ Google 로그인 성공");
+      console.log("👤 이름: " + responsePayload.name);
+      console.log("📧 이메일: " + responsePayload.email);
+      console.log("🖼️ 프로필 사진: " + responsePayload.picture);
+
+      fetch("/save_user.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: responsePayload.name,
+          email: responsePayload.email,
+          picture: responsePayload.picture
         })
-        .join("")
-    );
-    return JSON.parse(jsonPayload);
-  }
+      });
 
-  function handleCredentialResponse(response) {
-    const responsePayload = decodeJWT(response.credential);
-    console.log("✅ Google 로그인 성공");
-    console.log("👤 이름: " + responsePayload.name);
-    console.log("📧 이메일: " + responsePayload.email);
-    console.log("🖼️ 프로필 사진: " + responsePayload.picture);
+      document.querySelector(".login-btn").style.display = "none";
+      document.querySelector(".user-info").style.display = "flex";
+      document.querySelector(".user-name").textContent = responsePayload.name;
+      document.querySelector(".login-popup").style.display = "none";
 
-    fetch("/save_user.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({
-      name: responsePayload.name,
-      email: responsePayload.email,
-      picture: responsePayload.picture
-    })
-  });
-
-    document.querySelector(".login-btn").style.display = "none";
-    document.querySelector(".user-info").style.display = "flex";
-    document.querySelector(".user-name").textContent = responsePayload.name;
-    document.querySelector(".login-popup").style.display = "none";
-
-    alert(`${responsePayload.name}님 환영합니다!`);
-    document.querySelector(".login-popup").style.display = "none";
-  }
-</script>
+      alert(`${responsePayload.name}님 환영합니다!`);
+      document.querySelector(".login-popup").style.display = "none";
+    }
+  </script>
 </head>
 
 <body>
@@ -339,10 +387,11 @@
   </header>
 
   <div class="search-bar">
-    <input type="text" placeholder="궁금한 이슈를 검색하세요" />
-    <button class="search-btn">🔍</button>
+    <input type="text" id="searchInput" placeholder="궁금한 이슈를 검색하세요" />
+    <button class="search-btn" id="searchBtn">🔍</button>
   </div>
 
+  <div id="suggestionArea"></div>
 
   <!-- 로그인 팝업 -->
   <div class="login-popup">
@@ -362,9 +411,6 @@
       data-size="large"
       data-logo_alignment="left">
       </div>
-
-      <img src="image/naver.png" alt="네이버로 로그인" class="social-login-img" tabindex="0" data-provider="naver" />
-      <img src="image/kakao.png" alt="카카오로 로그인" class="social-login-img" tabindex="0" data-provider="kakao" />
       <button class="close-popup">닫기</button>
     </div>
   </div>
@@ -378,61 +424,24 @@
       </div>
       <div class="tab-content" id="tab-today">
         <div class="issue-grid">
-          <div class="issue-column">
-            <button>이슈 1</button>
-            <button>이슈 3</button>
-            <button>이슈 5</button>
-            <button>이슈 7</button>
-            <button>이슈 9</button>
-          </div>
-          <div class="issue-column">
-            <button>이슈 2</button>
-            <button>이슈 4</button>
-            <button>이슈 6</button>
-            <button>이슈 8</button>
-            <button>이슈 10</button>
-          </div>
+          <div class="issue-column"></div>
+          <div class="issue-column"></div>
         </div>
       </div>
       <div class="tab-content" id="tab-week" style="display:none">
         <div class="issue-grid">
-          <div class="issue-column">
-            <button>이슈 11</button>
-            <button>이슈 13</button>
-            <button>이슈 15</button>
-            <button>이슈 17</button>
-            <button>이슈 19</button>
-          </div>
-          <div class="issue-column">
-            <button>이슈 12</button>
-            <button>이슈 14</button>
-            <button>이슈 16</button>
-            <button>이슈 18</button>
-            <button>이슈 20</button>
-          </div>
+          <div class="issue-column"></div>
+          <div class="issue-column"></div>
         </div>
       </div>
       <div class="tab-content" id="tab-month" style="display:none">
         <div class="issue-grid">
-          <div class="issue-column">
-            <button>이슈 21</button>
-            <button>이슈 23</button>
-            <button>이슈 25</button>
-            <button>이슈 27</button>
-            <button>이슈 29</button>
-          </div>
-          <div class="issue-column">
-            <button>이슈 22</button>
-            <button>이슈 24</button>
-            <button>이슈 26</button>
-            <button>이슈 28</button>
-            <button>이슈 30</button>
-          </div>
+          <div class="issue-column"></div>
+          <div class="issue-column"></div>
         </div>
       </div>
     </div>
-  </main>
-
+  </main> 
 
   <script>
     // 탭 전환 스크립트
@@ -443,16 +452,6 @@
         const tab = this.getAttribute('data-tab');
         document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
         document.getElementById('tab-' + tab).style.display = '';
-      });
-    });
-
-    // 이슈 버튼 클릭 시 버튼 텍스트를 쿼리로 전달
-    document.querySelectorAll(".issue-column button").forEach(button => {
-      button.addEventListener("click", () => {
-        if (!button.disabled) {
-          const issueName = encodeURIComponent(button.textContent.trim());
-          window.location.href = `search_result_page.html?query=${issueName}`;
-        }
       });
     });
 
@@ -482,24 +481,6 @@
     loginPopup.addEventListener('mousedown', (e) => {
       if (e.target === loginPopup) loginPopup.style.display = 'none';
     });
-
-    //저장된 로그인 정보 확인
-    window.addEventListener("DOMContentLoaded", async () => {
-  try {
-    const res = await fetch("/me.php", { credentials: "include" });
-    if (!res.ok) throw new Error();
-    const user = await res.json();
-    
-    document.querySelector(".user-name").textContent = user.name;
-    document.querySelector(".login-btn").style.display = "none";
-    document.querySelector(".user-info").style.display = "flex";
-  } catch {
-    document.querySelector(".login-btn").style.display = "inline-block";
-    document.querySelector(".user-info").style.display = "none";
-    document.querySelector(".user-name").textContent = '';
-  }
-});
-
 
     // 사용자 드롭다운 메뉴 로직 - 안전한 요소 참조
     const userNameSpan = document.querySelector('.user-name');
@@ -546,8 +527,8 @@
         dropdownOpen = false;
         alert('로그아웃 되었습니다.');
         });
-   }
-}
+      }
+    }
 
     // 소셜 이미지 버튼 클릭 및 키보드 접근성
     document.querySelectorAll('.social-img-btn').forEach(function(img) {
@@ -562,25 +543,369 @@
         }
       });
     });
-
-    // 검색 버튼 클릭 시 입력값이 있으면 결과 페이지로 이동
-    const searchBtn = document.querySelector('.search-btn');
-    const searchInputBox = document.querySelector('.search-bar input');
-    searchBtn.addEventListener('click', function() {
-      if (searchInputBox.value.trim()) {
-        const query = encodeURIComponent(searchInputBox.value.trim());
-        window.location.href = `search_result_page.html?query=${query}`;
-      }
-    });
-    // 엔터키 입력 시에도 동일하게 동작
-    searchInputBox.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' && searchInputBox.value.trim()) {
-        const query = encodeURIComponent(searchInputBox.value.trim());
-        window.location.href = `search_result_page.html?query=${query}`;
-      }
-    });
-
-    
   </script>
+
+  <!-- DOM -->
+  <script>
+    const apiBase = "https://2cb5ab3068290.notebooks.jarvislabs.net/proxy/8888"; // 실제 API 프록시 포트에 맞게
+    
+    document.addEventListener("DOMContentLoaded", async () => {
+      // 1. 로그인 정보 확인 ----------------------------------------
+      try {
+        const res = await fetch("/me.php", { credentials: "include" });
+        if (!res.ok) throw new Error();
+        const user = await res.json();
+        document.querySelector(".user-name").textContent = user.name;
+        document.querySelector(".login-btn").style.display = "none";
+        document.querySelector(".user-info").style.display = "flex";
+      } catch {
+        document.querySelector(".login-btn").style.display = "inline-block";
+        document.querySelector(".user-info").style.display = "none";
+        document.querySelector(".user-name").textContent = '';
+      }
+    
+      // 2. 검색 기능 ---------------------------------------------
+      const searchBtn = document.getElementById("searchBtn");
+      const searchInput = document.getElementById("searchInput");
+      const suggestionArea = document.getElementById("suggestionArea");
+    
+      async function handleSearch() {
+        const query = searchInput.value.trim();
+        if (!query) {
+          alert("검색어를 입력하세요.");
+          return;
+        }
+        try {
+          await fetch("/save_search.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ query })
+          });
+          const res = await fetch(`${apiBase}/summarize`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tag: query })
+          });
+          const data = await res.json();
+          if (!data.not_found) {
+            localStorage.setItem("biasbreaker_result", JSON.stringify(data));
+            window.location.href = `search_result_page.html?query=${encodeURIComponent(query)}`;
+            return;
+          }
+          // 결과 없을 때 유사 태그 제안
+          suggestionArea.innerHTML = `
+            <div class="suggestion-card">
+              <div class="suggestion-title">
+                <span class="icon">❗</span>
+                <span><b>'${query}'</b> 태그에 대한 정보가 없습니다.</span>
+              </div>
+              ${
+                data.suggestions.length > 0
+                  ? `<div class="suggestion-subtitle"><span class="icon">🔍</span>유사 태그</div>
+                    <div class="suggested-tags">
+                      ${data.suggestions.map(tag =>
+                        `<button class="suggested-tag-btn">${tag}</button>`
+                      ).join('')}
+                    </div>`
+                  : `<div class="no-suggestion">추천할 유사 태그가 없습니다.</div>`
+              }
+              <button id="createTagBtn" class="create-tag-btn"><span class="plus-icon">＋</span> 태그 만들기</button>
+            </div>
+            <style>
+              .suggestion-card {
+                max-width: 380px;
+                background: #fffde6;
+                border-radius: 18px;
+                padding: 36px 26px 26px 26px;
+                box-shadow: 0 4px 24px rgba(255,224,102,0.16);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 18px;
+                margin: 0 auto;
+                animation: fadeIn .7s cubic-bezier(.5,1.7,.5,1);
+              }
+
+              .suggestion-title {
+                font-size: 22px;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                color: #343434;
+                margin-bottom: 6px;
+                letter-spacing: -0.3px;
+              }
+              .suggestion-title .icon { color: #e83512; font-size: 22px; }
+              .suggestion-subtitle {
+                font-size: 22px;
+                font-weight: 700;
+                color: #343434;
+                margin-bottom: 0px;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+              }
+              .suggestion-subtitle .icon { font-size: 22px; }
+              .suggested-tags {
+                display: flex;
+                flex-direction: column;
+                gap: 7px;
+                width: 100%;
+                margin-bottom: 0px;
+              }
+              .suggested-tag-btn {
+                background: #fffbe7;
+                border: 1.2px dashed #ffd600;
+                border-radius: 8px;
+                color: #333;
+                font-size: 22px;
+                padding: 6px 0;
+                width: 100%;
+                cursor: pointer;
+                transition: background 0.14s, border 0.14s, color 0.12s;
+                font-weight: 500;
+                letter-spacing: -0.1px;
+              }
+              .suggested-tag-btn:hover {
+                background: #ffec99;
+                border: 1.5px solid #ffd600;
+                color: #cd7e0b;
+              }
+              .create-tag-btn {
+                margin-top: 12px;
+                background: #caff70 !important;
+                color: #224a14 !important;
+                border: none;
+                border-radius: 20px;
+                font-size: 22px;
+                font-weight: 700;
+                padding: 18px 0;
+                width: 100%;
+                min-width: 100px;
+                box-shadow: 0 8px 32px rgba(180, 255, 120, 0.09);
+                cursor: pointer;
+                transition: background 0.13s, color 0.14s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                letter-spacing: -1px;
+              }
+
+              .create-tag-btn .plus-icon {
+                font-size: 22px;
+                color: #222 !important;
+                font-weight: bold;
+              }
+              .create-tag-btn:hover,
+              .create-tag-btn:focus {
+                background: #eaffb5;
+                color: #406c12;
+              }
+              .no-suggestion {
+                color: #999;
+                font-size: 22px;
+                margin-bottom: 5px;
+              }
+              @keyframes fadeIn {
+                0% { opacity: 0; transform: translateY(10px);}
+                100% { opacity: 1; transform: none;}
+              }
+            </style>
+          `;
+          suggestionArea.style.display = "block";
+
+          setTimeout(() => {
+            document.querySelectorAll('.suggested-tag-btn').forEach(btn => {
+              btn.addEventListener('click', async function() {
+                const tag = this.textContent.trim();
+                searchInput.value = tag;  // 검색창에도 입력
+                handleSearch();           // 그냥 handleSearch()만 호출 (query 없이)
+              });
+            });
+          }, 0);
+
+          document.getElementById("createTagBtn").addEventListener("click", async () => {
+            const originalQuery = query; // query 고정
+            const btn = document.getElementById("createTagBtn");
+            btn.disabled = true; // 중복 클릭 방지
+
+            try {
+              // 1. 태그 생성 요청
+              const res = await fetch(`${apiBase}/create_tag_request`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tag: query })
+              });
+
+              const { task_id } = await res.json();
+              suggestionArea.innerHTML = `
+                <div class="suggestion-card">
+                  <div class="suggestion-title">
+                    <span class="icon spinner">⏳</span>
+                    <span><b>태그를 생성 중입니다...</b></span>
+                  </div>
+                  <p class="loading-info">이 작업은 최대 <b>3분</b> 정도 소요될 수 있어요.<br>잠시만 기다려 주세요.</p>
+                </div>
+                <style>
+                  .suggestion-card {
+                    max-width: 380px;
+                    background: #fffde6;
+                    border-radius: 18px;
+                    padding: 36px 26px 26px 26px;
+                    box-shadow: 0 4px 24px rgba(255,224,102,0.16);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 18px;
+                    margin: 0 auto;
+                    animation: fadeIn .7s cubic-bezier(.5,1.7,.5,1);
+                  }
+
+                  .suggestion-title {
+                    font-size: 22px;
+                    font-weight: 700;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    color: #343434;
+                    letter-spacing: -0.3px;
+                  }
+
+                  .spinner {
+                    animation: spin 1.1s linear infinite;
+                    display: inline-block;
+                  }
+
+                  @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                  }
+
+                  .loading-info {
+                    text-align: center;
+                    font-size: 16px;
+                    color: #666;
+                    line-height: 1.6;
+                  }
+
+                  @keyframes fadeIn {
+                    0% { opacity: 0; transform: translateY(10px);}
+                    100% { opacity: 1; transform: none;}
+                  }
+                </style>
+              `;
+
+              // 2. 주기적으로 상태 확인 (폴링)
+              const interval = setInterval(async () => {
+                try {
+                  const statusRes = await fetch(`${apiBase}/create_tag_status?task_id=${task_id}`);
+                  const data = await statusRes.json();
+
+                  if (data.status === "done") {
+                    clearInterval(interval);
+                    alert(data.message || `'${query}' 태그가 생성되었습니다!`);
+
+                    // 요약 데이터를 다시 요청
+                    try {
+                      const summaryRes = await fetch(`${apiBase}/summarize`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ tag: query })
+                      });
+                      const summaryData = await summaryRes.json();
+                      if (!summaryData.not_found) {
+                        localStorage.setItem("biasbreaker_result", JSON.stringify(summaryData));
+                      }
+                    } catch (e) {
+                      console.warn("요약 데이터 요청 실패", e);
+                    }
+
+                    // 이동
+                    window.location.href = `search_result_page.html?query=${encodeURIComponent(query)}`;
+                  } else if (data.status === "error") {
+                    clearInterval(interval);
+                    alert(`태그 생성 실패: ${data.error}`);
+                  }
+                } catch (err) {
+                  clearInterval(interval);
+                  alert("태그 생성 상태를 확인하는 중 오류가 발생했습니다.");
+                  console.error("Polling Error:", err);
+                }
+              }, 10000); // 10초마다 확인
+            } catch (error) {
+              alert("태그 생성 중 오류가 발생했습니다.");
+              console.error("Error:", error);
+            }
+          });
+        } catch (error) {
+          alert("서버와 연결할 수 없습니다.");
+          console.error("Error:", error);
+        }
+      }
+    
+      searchBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        handleSearch();
+      });
+      searchInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          handleSearch();
+        }
+      });
+    
+      // 3. 오늘/주/월 이슈 버튼 렌더링 -----------------------------
+      async function fetchAndRenderIssueTab(period, tabSelector) {
+        const tagList = await fetch(`${apiBase}/popular_tags?period=${period}&limit=10`)
+          .then(res => res.json()).then(data => data.tags || []);
+        renderIssueButtons(tabSelector, tagList);
+      }
+      fetchAndRenderIssueTab('today', "#tab-today");
+      fetchAndRenderIssueTab('week', "#tab-week");
+      fetchAndRenderIssueTab('month', "#tab-month");
+    
+      function renderIssueButtons(tabSelector, tagList) {
+        const tab = document.querySelector(tabSelector);
+        if (!tab) return;
+        const columns = tab.querySelectorAll('.issue-column');
+        columns[0].innerHTML = "";
+        columns[1].innerHTML = "";
+        tagList.forEach((tag, idx) => {
+          const btn = document.createElement("button");
+          btn.textContent = tag;
+          btn.onclick = async () => {
+            await fetch("/save_search.php", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ query: tag })
+            });
+
+            try {
+              const res = await fetch(`${apiBase}/summarize`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tag: tag })
+              });
+              const data = await res.json();
+              if (!data.not_found) {
+                localStorage.setItem("biasbreaker_result", JSON.stringify(data));
+                window.location.href = `search_result_page.html?query=${encodeURIComponent(tag)}`;
+              } else {
+                alert("이 태그에 대한 요약 결과가 없습니다.");
+              }
+            } catch (err) {
+              alert("서버 오류 또는 네트워크 오류입니다.");
+            }
+          };
+          columns[idx < 5 ? 0 : 1].appendChild(btn);
+        });
+      }
+      // ---------------------------- END
+    });
+    </script> 
 </body>
 </html>

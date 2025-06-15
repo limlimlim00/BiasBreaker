@@ -12,19 +12,22 @@
       box-sizing: border-box;
       font-family: sans-serif;
     }
+
     body {
       background-color: white;
       color: black;
       padding: 40px;
+      overflow-y: scroll;
     }
 
     /* ===== Header ===== */
     header {
-      position: fixed;
+      position: fixed; 
       top: 0; left: 0; right: 0;
       background: white;
       height: 80px;
     }
+
     .header-row {
       display: flex;
       align-items: center;
@@ -36,21 +39,24 @@
       position: static;
       flex-direction: row;
     }
-    .logo {
-      position: fixed;
-      top: 40px;
-      left: 40px;
-      font-weight: bold;
-      font-size: 30px;
-      z-index: 10;
-      cursor: pointer;
-      margin-bottom: 0;
-    }
+
     .header-actions {
       display: flex;
       align-items: center;
       gap: 16px;
     }
+
+    .logo {
+      position: fixed;
+      top: 40px;
+      left: 40px;
+      font-weight: bold;
+      font-size: 40px;
+      z-index: 10;
+      cursor: pointer;
+      margin-bottom: 0;
+    }
+
     .login-btn {
       position: fixed;
       top: 40px;
@@ -65,6 +71,7 @@
       z-index: 10;
       margin-bottom: 0;
     }
+
     .user-info {
       position: fixed;
       top: 40px;
@@ -74,8 +81,9 @@
       gap: 12px;
       z-index: 10;
       font-weight: bold;
-      font-size: 14px;
+      font-size: 20px;
     }
+
     .user-dropdown {
       display: none;
       position: absolute;
@@ -98,9 +106,11 @@
       cursor: pointer;
       font-size: 14px;
     }
+
     .dropdown-item:hover {
       background: #f5f5f5;
     }
+
     .dropdown-item.logout-item {
       color: #d00;
     }
@@ -110,47 +120,77 @@
       background-color: #f5f5f5;
       padding: 40px;
       border-radius: 20px;
-      max-width: 800px;
+      width: 800px;
       min-width: 500px;
-      margin: 120px auto 0;
       display: flex;
+      margin: 155px auto 0;
       flex-direction: column;
-      gap: 0;
+      gap: 24px;
       align-items: center;
+      position: relative;  /* 추가! */
     }
+
     /* ===== Tab Bar ===== */
     .tab-bar {
       display: flex;
       gap: 12px;
       justify-content: center;
+      margin-bottom: 24px;
+      font-weight: 700;
       width: 100%;
-      margin: 0 0 0 0;
-      background: none;
-      border-radius: 20px 20px 0 0;
-      padding-bottom: 0;
     }
+
     .tab-btn {
       background: none;
       border: none;
-      font-size: 18px;
+      font-size: 26px;
       color: #aaa;
-      padding: 10px 32px;
+      padding: 8px 20px;
+      border-radius: 20px 20px 0 0;
       cursor: pointer;
       font-weight: bold;
       transition: color 0.2s, background 0.2s;
     }
+
     .tab-btn.active {
       color: black;
       background: #f5f5f5;
       border-bottom: 2px solid black;
     }
+
     /* ===== Tab Content ===== */
     .tab-content {
       width: 100%;
       background: white;
       margin: 0 auto;
-      padding: 32px 24px;
+      padding: 20px 24px 32px 24px;  /* top 20px, right/left 24px, bottom 32px */
       min-height: 200px;
+      border-radius: 16px;
+      position: relative; /* 반드시 있어야 .delete-all-btn의 기준이 됨 */
+    }
+
+    .tab-header {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end; /* 이걸 유지 */
+      align-items: center;        /* 이 줄을 추가 */
+      margin-bottom: 10px;
+    }
+
+    .delete-all-btn {
+      background: #eee;
+      border: none;
+      border-radius: 12px;
+      padding: 8px 26px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      position: absolute;
+      top: 20px;      /* .tab-content의 위쪽에서 20px */
+      right: 20px;    /* .tab-content의 오른쪽에서 24px */
+      z-index: 2;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+      transition: background 0.18s;
     }
 
     /* ===== List Styles ===== */
@@ -159,24 +199,35 @@
       padding: 0;
       margin: 0;
     }
+
     .history-item, .archive-item {
       padding: 16px 0;
       border-bottom: 1px solid #eee;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
     }
+
     .history-item:last-child, .archive-item:last-child {
       border-bottom: none;
     }
+
     .item-query {
       font-weight: bold;
       color: #222;
     }
+    
     .item-date {
       color: #888;
       font-size: 13px;
       margin-left: 12px;
+    }
+
+    .list-divider {
+      width: 100%;
+      border-bottom: 1.5px solid #e0e0e0;
+      margin: 54px 0 0 0;  /* 위쪽 마진을 충분히 줘서 버튼과 겹치지 않게 */
     }
 
     /* ===== Empty State ===== */
@@ -197,8 +248,8 @@
         <div class="user-info" style="display:none; align-items: center; gap: 8px;">
           <span class="user-name" style="font-weight: bold; cursor:pointer;"></span>
           <div class="user-dropdown">
-            <button class="dropdown-item history-item">히스토리</button>
-            <button class="dropdown-item archive-item">아카이브</button>
+            <button class="dropdown-item">히스토리</button>
+            <button class="dropdown-item">아카이브</button>
             <button class="dropdown-item logout-item" style="color:#d00;">로그아웃</button>
           </div>
         </div>
@@ -211,11 +262,17 @@
       <button class="tab-btn" data-tab="history">히스토리</button>
       <button class="tab-btn" data-tab="archive">아카이브</button>
     </div>
-    <div class="tab-content" id="tab-history">
+    <div class="tab-content" id="tab-history" style="display:none;">
+      <div class="tab-header">
+      </div>
+      <div class="list-divider"></div>
       <ul class="history-list"></ul>
       <div class="empty-msg">검색 기록이 없습니다.</div>
     </div>
     <div class="tab-content" id="tab-archive" style="display:none;">
+      <div class="tab-header">
+      </div>
+      <div class="list-divider"></div>
       <ul class="archive-list"></ul>
       <div class="empty-msg">아카이브한 기록이 없습니다.</div>
     </div>
@@ -224,49 +281,48 @@
   <!-- Script: All logic grouped at the bottom for clarity -->
   <script>
     // 로그인 상태 확인 및 접근 제한
-   async function checkLogin() {
-    try {
-    const res = await fetch('/me.php', { credentials: 'include' });
-    if (!res.ok) throw new Error();
-    const user = await res.json();
-    // 로그인 상태 저장
-    window.currentUser = user; // 전역에 저장해 다른 곳에서도 사용 가능
-  } catch {
-    window.location.replace('index.html');
-  }
-}
+    async function checkLogin() {
+      try {
+      const res = await fetch('/me.php', { credentials: 'include' });
+      if (!res.ok) throw new Error();
+      const user = await res.json();
+      // 로그인 상태 저장
+      window.currentUser = user; // 전역에 저장해 다른 곳에서도 사용 가능
+      } catch {
+        window.location.replace('index.html');
+      }
+    }
 
-// 헤더 로그인/로그아웃/드롭다운 UI
+    // 헤더 로그인/로그아웃/드롭다운 UI
     async function updateLoginUI() {
-     try {
-     const res = await fetch('/me.php', { credentials: 'include' });
-     if (!res.ok) throw new Error();
-     const user = await res.json();
-     window.currentUser = user;
+      try {
+      const res = await fetch('/me.php', { credentials: 'include' });
+      if (!res.ok) throw new Error();
+      const user = await res.json();
+      window.currentUser = user;
 
-    const loginBtn = document.querySelector('.login-btn');
-    const userInfo = document.querySelector('.user-info');
-    const userNameSpan = document.querySelector('.user-name');
+      const loginBtn = document.querySelector('.login-btn');
+      const userInfo = document.querySelector('.user-info');
+      const userNameSpan = document.querySelector('.user-name');
 
-    loginBtn.style.display = 'none';
-    userInfo.style.display = 'flex';
-    userNameSpan.textContent = user.name || user.email;
-  } catch {
-    const loginBtn = document.querySelector('.login-btn');
-    const userInfo = document.querySelector('.user-info');
-    const userNameSpan = document.querySelector('.user-name');
+      loginBtn.style.display = 'none';
+      userInfo.style.display = 'flex';
+      userNameSpan.textContent = user.name || user.email;
+      } catch {
+        const loginBtn = document.querySelector('.login-btn');
+        const userInfo = document.querySelector('.user-info');
+        const userNameSpan = document.querySelector('.user-name');
 
-    loginBtn.style.display = 'inline-block';
-    userInfo.style.display = 'none';
-    userNameSpan.textContent = '';
-  }
-}
+        loginBtn.style.display = 'inline-block';
+        userInfo.style.display = 'none';
+        userNameSpan.textContent = '';
+      }
+    }
 
     window.addEventListener('DOMContentLoaded', async () => {
     await checkLogin();
     await updateLoginUI();
     });
-
 
     // 드롭다운 메뉴 로직
     const userNameSpan = document.querySelector('.user-name');
@@ -296,7 +352,6 @@
         } catch (err) {
           console.error('로그아웃 요청 실패:', err);
         }
-
         updateLoginUI();
         window.location.replace('index.html');
       });
@@ -328,87 +383,101 @@
       });
     });
 
-    async function renderHistory() {
-  const list = document.querySelector('.history-list');
-  const emptyMsg = document.querySelector('#tab-history .empty-msg');
-  list.innerHTML = '';
+      async function renderHistory() {
+      const list = document.querySelector('.history-list');
+      const emptyMsg = document.querySelector('#tab-history .empty-msg');
+      list.innerHTML = '';
 
-  // 로그인 사용자 확인
-  let user;
-  try {
-    const res = await fetch('/me.php', { credentials: 'include' });
-    if (!res.ok) throw new Error();
-    user = await res.json();
-  } catch {
-    emptyMsg.textContent = '로그인 후 이용 가능합니다.';
-    emptyMsg.style.display = 'block';
-    return;
-  }
-
-  // 검색 기록 불러오기
-  let history = [];
-  try {
-    const res = await fetch('/history.php', { credentials: 'include' });
-    if (!res.ok) throw new Error();
-    history = await res.json();
-  } catch {
-    emptyMsg.textContent = '기록을 불러오지 못했습니다.';
-    emptyMsg.style.display = 'block';
-    return;
-  }
-
-  if (history.length === 0) {
-    emptyMsg.textContent = '검색 기록이 없습니다.';
-    emptyMsg.style.display = 'block';
-    document.getElementById('history-delete-all-btn')?.remove();
-    return;
-  }
-
-  emptyMsg.style.display = 'none';
-
-  // 전체 삭제 버튼 추가
-  if (!document.getElementById('history-delete-all-btn')) {
-    const btn = document.createElement('button');
-    btn.id = 'history-delete-all-btn';
-    btn.textContent = '전체 삭제';
-    btn.style = 'float:right; margin-bottom:10px; background:#eee; border:none; border-radius:8px; padding:6px 16px; cursor:pointer; font-size:13px;';
-    btn.onclick = async function () {
-      if (confirm('검색 기록을 모두 삭제하시겠습니까?')) {
-        await fetch('/delete_history.php', { method: 'POST', credentials: 'include' });
-        renderHistory();
+      let history = [];
+      try {
+        const res = await fetch('/history.php', { credentials: 'include' });
+        if (!res.ok) throw new Error();
+        history = await res.json();
+      } catch {
+        emptyMsg.textContent = '기록을 불러오지 못했습니다.';
+        emptyMsg.style.display = 'block';
+        return;
       }
-    };
-    document.getElementById('tab-history').prepend(btn);
-  }
 
-  history.forEach((item) => {
-    const li = document.createElement('li');
-    li.className = 'history-item';
-    const url = `search_result_page.html?query=${encodeURIComponent(item.query)}`;
-    li.innerHTML = `<a href="${url}" style="text-decoration:none; color:inherit; display:flex; justify-content:space-between; align-items:center; width:100%"><span class="item-query">${item.query}</span><span class="item-date">${item.date}</span></a>`;
-
-    // 삭제 버튼
-    const delBtn = document.createElement('button');
-    delBtn.textContent = '✕';
-    delBtn.title = '삭제';
-    delBtn.style = 'margin-left:12px; background:none; border:none; color:#d00; font-size:16px; cursor:pointer;';
-    delBtn.onclick = async function (e) {
-      e.stopPropagation();
-      e.preventDefault();
-      if (confirm('이 기록을 삭제하시겠습니까?')) {
-        await fetch('/delete_history.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ id: item.id })  // 기록 고유 ID로 삭제
-        });
-        renderHistory();
+      if (history.length === 0) {
+        emptyMsg.textContent = '검색 기록이 없습니다.';
+        emptyMsg.style.display = 'block';
+        document.getElementById('history-delete-all-btn')?.remove();
+        return;
       }
-    };
-    li.appendChild(delBtn);
-    list.appendChild(li);
-  });
-}
+
+      emptyMsg.style.display = 'none';
+
+      if (!document.getElementById('history-delete-all-btn')) {
+        const btn = document.createElement('button');
+        btn.id = 'history-delete-all-btn';
+        btn.textContent = '전체 삭제';
+        btn.className = 'delete-all-btn';
+        btn.onclick = async function () {
+          if (confirm('검색 기록을 모두 삭제하시겠습니까?')) {
+            await fetch('/delete_history.php', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  credentials: 'include',
+  body: JSON.stringify({ delete_all: true })
+});
+
+            renderHistory();
+          }
+        };
+        document.querySelector('#tab-history .tab-header').appendChild(btn);
+      }
+
+      history.forEach((item) => {
+        const li = document.createElement('li');
+        li.className = 'history-item';
+
+        const contentWrapper = document.createElement('div');
+        contentWrapper.style = 'display: flex; flex-direction: column; flex: 1; cursor: pointer;';
+        contentWrapper.onclick = () => {
+          window.open(`/searchresult.html?query=${encodeURIComponent(item.query)}`, '_blank');
+        };
+
+        const row = document.createElement('div');
+        row.style = 'display: flex; align-items: baseline; justify-content: space-between; width: 100%;';
+
+        const query = document.createElement('span');
+        query.className = 'item-query';
+        query.textContent = item.query;
+
+        const date = document.createElement('span');
+        date.className = 'item-date';
+        date.textContent = new Date(item.searched_at).toLocaleString();
+
+        row.appendChild(query);
+        row.appendChild(date);
+        contentWrapper.appendChild(row);
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '✕';
+        delBtn.title = '삭제';
+        delBtn.style = 'margin-left:12px; background:none; border:none; color:#d00; font-size:16px; cursor:pointer;';
+        delBtn.onclick = async function (e) {
+          e.stopPropagation();
+          e.preventDefault();
+          if (confirm('이 기록을 삭제하시겠습니까?')) {
+            await fetch('/delete_history.php', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  credentials: 'include',
+  body: JSON.stringify({ id: item.id })
+});
+
+            renderHistory();
+          }
+        };
+
+        li.appendChild(contentWrapper);
+        li.appendChild(delBtn);
+        list.appendChild(li);
+      });
+    }
+
 
   async function renderArchive() {
   const list = document.querySelector('.archive-list');
@@ -453,27 +522,46 @@
     const btn = document.createElement('button');
     btn.id = 'archive-delete-all-btn';
     btn.textContent = '전체 삭제';
-    btn.style = 'float:right; margin-bottom:10px; background:#eee; border:none; border-radius:8px; padding:6px 16px; cursor:pointer; font-size:13px;';
+    btn.className = 'delete-all-btn';
     btn.onclick = async function () {
       if (confirm('아카이브 기록을 모두 삭제하시겠습니까?')) {
-        await fetch('/delete_archive.php', { method: 'POST', credentials: 'include' });
+        await fetch('/delete_archive.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ delete_all: true })
+        });
         renderArchive();
       }
     };
-    document.getElementById('tab-archive').prepend(btn);
+    document.querySelector('#tab-archive .tab-header').appendChild(btn);
   }
 
-    archive.forEach((item) => {
+  archive.forEach((item) => {
     const li = document.createElement('li');
     li.className = 'archive-item';
-    const pdfUrl = item.pdf_path;  // 서버에서 직접 내려주는 전체 경로 사용
 
-    li.innerHTML = `
-      <a href="${pdfUrl}" target="_blank" style="text-decoration:none; color:inherit; display:flex; justify-content:space-between; align-items:center; width:100%">
-        <span class="item-query">${item.query}</span>
-        <span class="item-date">${new Date(item.created_at).toLocaleString()}</span>
-      </a>
-    `;
+    const contentWrapper = document.createElement('div');
+    contentWrapper.style = 'display: flex; flex-direction: column; flex: 1; cursor: pointer;';
+    contentWrapper.onclick = () => {
+      window.open(item.pdf_path, '_blank');
+    };
+
+    // 1줄 row에 키워드와 날짜를 같이 넣음
+    const row = document.createElement('div');
+    row.style = 'display: flex; align-items: baseline; justify-content: space-between; width: 100%;';
+
+    const query = document.createElement('span');
+    query.className = 'item-query';
+    query.textContent = item.query;
+
+    const date = document.createElement('span');
+    date.className = 'item-date';
+    date.textContent = new Date(item.created_at).toLocaleString(); // or item.date
+
+    row.appendChild(query);
+    row.appendChild(date);
+    contentWrapper.appendChild(row);
 
     const delBtn = document.createElement('button');
     delBtn.textContent = '✕';
@@ -493,10 +581,10 @@
       }
     };
 
+    li.appendChild(contentWrapper);
     li.appendChild(delBtn);
     list.appendChild(li);
   });
-
 }
 
     function renderAll() { renderHistory(); renderArchive(); }

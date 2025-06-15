@@ -4,7 +4,7 @@ header('Content-Type: application/json');
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-if (!isset($data['email']) || !isset($data['name']) || !isset($data['picture'])) {
+if (!isset($data['email'])) {
     http_response_code(400);
     echo json_encode(['error' => '필수 데이터 누락']);
     exit;
